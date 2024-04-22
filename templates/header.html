@@ -1,0 +1,175 @@
+{% load notifications_tags %}
+{% notifications_unread as unread_count %}
+
+<!-- 定义导航栏 -->
+<nav class="navbar navbar-expand-lg navbar-light">
+    <div class="container">
+        <!-- 导航栏商标 -->
+        <a class="navbar-brand" href="#">芥尘的数据仓库</a>
+        <!-- 导航入口 -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarScroll" aria-controls="navbarScroll" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarScroll">
+            <ul class="navbar-nav me-auto my-2 my-lg-0 navbar-nav-scroll" style="--bs-scroll-height:100px;">
+                <li class="nav-item">
+                    <a class="nav-link active" aria-current="page" href="{% url 'article:article_list' %}">主页</a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        人工智能
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <a class="dropdown-item" href="{%url 'article:article_list' %}?tag=机器学习">机器学习</a>
+                        <a class="dropdown-item" href="{%url 'article:article_list' %}?tag=神经网络">神经网络</a>
+                        <a class="dropdown-item" href="{%url 'article:article_list' %}?tag=自然语言处理">自然语言处理</a>
+                        <a class="dropdown-item" href="{%url 'article:article_list' %}?tag=计算机视觉">计算机视觉</a>
+                        <a class="dropdown-item" href="{%url 'article:article_list' %}?tag=AIGC">AIGC</a>
+                    </div>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        前端
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <a class="dropdown-item" href="{%url 'article:article_list' %}?tag=Vue">Vue</a>
+                        <a class="dropdown-item" href="{%url 'article:article_list' %}?tag=JavaScript">JavaScript</a>
+                        <a class="dropdown-item" href="{%url 'article:article_list' %}?tag=HTML">HTML</a>
+                        <a class="dropdown-item" href="{%url 'article:article_list' %}?tag=CSS">CSS</a>
+                        <a class="dropdown-item" href="{%url 'article:article_list' %}?tag=NodeJS">NodeJS</a>
+                        <a class="dropdown-item" href="{%url 'article:article_list' %}?tag=React">React</a>
+                        <a class="dropdown-item" href="{%url 'article:article_list' %}?tag=Git相关">Git相关</a>
+                        <a class="dropdown-item" href="{%url 'article:article_list' %}?tag=Webpack">Webpack</a>
+                    </div>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Python
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <a class="dropdown-item" href="{%url 'article:article_list' %}?tag=Django">Django</a>
+                        <a class="dropdown-item" href="{%url 'article:article_list' %}?tag=Flask">Flask</a>
+                        <a class="dropdown-item" href="{%url 'article:article_list' %}?tag=PyTorch">PyTorch</a>
+                        <a class="dropdown-item" href="{%url 'article:article_list' %}?tag=Pandas">Pandas</a>
+                    </div>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Java
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <a class="dropdown-item" href="{%url 'article:article_list' %}?tag=Spring">Spring</a>
+                        <a class="dropdown-item" href="{%url 'article:article_list' %}?tag=Tomcat">Tomcat</a>
+                    </div>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        数据库
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <a class="dropdown-item" href="{%url 'article:article_list' %}?tag=嵌入式">SQL</a>
+                        <a class="dropdown-item" href="{%url 'article:article_list' %}?tag=PHP">MySQL</a>
+                    </div>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        其他
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <a class="dropdown-item" href="{%url 'article:article_list' %}?tag=嵌入式">嵌入式</a>
+                        <a class="dropdown-item" href="{%url 'article:article_list' %}?tag=PHP">PHP</a>
+                    </div>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        考研408
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <a class="dropdown-item" href="{%url 'article:article_list' %}?tag=数据结构">数据结构</a>
+                        <a class="dropdown-item" href="{%url 'article:article_list' %}?tag=计算机组成原理">计算机组成原理</a>
+                        <a class="dropdown-item" href="{%url 'article:article_list' %}?tag=计算机网络">计算机网络</a>
+                        <a class="dropdown-item" href="{%url 'article:article_list' %}?tag=操作系统">操作系统</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" aria-current="page" href="{% url 'article:article_list' %}?tag=学校作业">学校作业</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" aria-current="page" href="{% url 'article:article_list' %}?tag=个人项目">个人项目</a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle active" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        切换语言
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <a class="dropdown-item">简体中文</a>
+                        <a class="dropdown-item">繁体中文</a>
+                        <a class="dropdown-item">English</a>
+                    </div>
+                </li>
+                <!-- Django的 if 模板语句 -->
+                {% if user.is_authenticated %}
+                    <!-- 如果用户已经登录，则显示用户名下拉框 -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            {% if unread_count %}
+                                <svg viewBox="0 0 8 8"
+                                     width="8px"
+                                     height="8px">
+                                    <circle cx="4"
+                                            cy="4"
+                                            r="4"
+                                            fill="#ff6b6b"
+                                    ></circle>
+                                </svg>
+                            {% endif %}
+                            {{ user.username }}
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <a class="dropdown-item" href="{% url "notice:list" %}">通知
+                                {% if unread_count %}
+                                    <span class="badge badge-danger">{{ unread_count }}</span>
+                                {% endif %}
+                            </a>
+                            <a class="dropdown-item" href="{% url 'article:article_create' %}">写文章</a>
+                            <a class="dropdown-item" href='{% url "userprofile:edit" user.id %}'>个人信息</a>
+                            <a class="dropdown-item" href="#" onclick="user_delete()">删除用户</a>
+                            <a class="dropdown-item" href='{% url "userprofile:logout" %}'>退出登录</a>
+                        </div>
+                    </li>
+                <!-- 如果用户未登录，则显示 “登录” -->
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'account_login' %}">登录</a>
+                    </li>
+                <!-- if 语句在这里结束 -->
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>
+
+{% if user.is_authenticated %}
+<form 
+    style="display:none;" 
+    id="user_delete"
+    action="{% url 'userprofile:delete' user.id %}" 
+    method="POST"
+>
+{% csrf_token %}
+    <button type="submit">发送</button>
+</form>
+    <script>
+        function user_delete() {
+            // 调用layer弹窗组件
+            layer.open({
+                title: "确认删除",
+                content: "确认删除用户资料吗？",
+                yes: function(index, layero) {
+                    $('form#user_delete button').click();
+                    layer.close(index);
+                },
+            })
+        }
+    </script>
+{% endif %}

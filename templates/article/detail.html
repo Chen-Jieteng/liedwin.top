@@ -112,7 +112,7 @@
                 onclick=""
             >
                 <span>分享</span>
-                <span><i class="fal fa-share-square"</i></span>
+                <span><i class="fal fa-share-square"></i></span>
             </button>
         </div>
     </div>
@@ -172,9 +172,12 @@
             </h5>
             <br>
         {% endif %}
-        
+    </div>
+    
+    <div class="row">
         {% load mptt_tags %}
         <h5>共有{{ comments.count }}条评论</h5>
+        
         <!-- 遍历树形结构 -->
         {% recursetree comments %}
         {% with comment=node %}
@@ -241,7 +244,7 @@
         </div>
         {% endwith %}
         {% endrecursetree %}
-    </div> 
+    </div>
 </div>
 
     
@@ -250,9 +253,9 @@
 <!-- 样式 -->
 <style>
     .user-avatar {
-        width: 80px;
-        height: 80px;
-        border-radius: 50%;
+        width: auto;
+        height: auto;
+        border-radius: 100%;
         object-fit: cover;
     }
     @media (max-width: 768px) {

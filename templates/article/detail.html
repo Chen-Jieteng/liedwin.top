@@ -14,10 +14,10 @@
     <!-- row2 分类，子分类 -->
     <div class="row text-light py-3" style="background-color:plum">
         <div class="col-md-2 py-2">
-            <p><b>分类：<a href="#" target="_blank">{{article.column}}</a></b></p>
+            <p><b>分类：<a href="#" target="_blank">{{ article.column }}</a></b></p>
         </div>
         <div class="col-md-2 py-2">
-            <p><b>子分类：<a href="#" target="_blank">{{article.tags}}</a></b></p>
+            <p><b>子分类：<a href="#" target="_blank">{{ article.tags }}</a></b></p>
         </div>
     </div>
     
@@ -117,6 +117,9 @@
             </button>
         </div>
     </div>
+
+</div>
+
     
 <!--     相邻文章导航，暂时不用，后面弄成猜你喜欢推荐文章
                     <br>
@@ -143,7 +146,7 @@
     -->
    
     
-    <!-- row8 发表评论 -->
+<!--     <!-- row8 发表评论 -->
     <div class="row">
         <hr>
         {% if user.is_authenticated %}
@@ -248,7 +251,7 @@
             {% endrecursetree %}
         </div>
     </div>
-</div>
+</div> -->
 
 <!-- 样式 -->
 <style>

@@ -12,7 +12,7 @@
 <div class="container">
     
     <!-- row2 分类，子分类 -->
-    <div class="row text-light py-3" style="background_color:plum">
+    <div class="row text-light py-3" style="background-color:plum">
         <div class="col-md-2 py-2">
             <p><b>分类：<a href="#" target="_blank">{{article.column}}</a></b></p>
         </div>
@@ -78,7 +78,7 @@
     </div>
     
     <!-- row6 左边3目录(后面做成展开缩放，现在先隐藏移动端的)，右边9正文 -->
-    <div class="row">
+    <div class="row py-3">
         <div class="col-3 mt-4" id="sidebar" class="sidebar">
             <div class="sidebar__inner">
                 <h4><strong>目录</strong></h4>
@@ -243,6 +243,7 @@
                         {{ children }}
                     </div>
                 {% endif %}
+            </div>
             {% endwith %}
             {% endrecursetree %}
         </div>

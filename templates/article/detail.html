@@ -13,7 +13,7 @@
 
 <div class="container">
     
-    <!-- row2 分类，子分类 -->
+<!--     <!-- row2 分类，子分类 -->
     <div class="row text-light py-2 bg-light">
         <div class="col-2 py-1">
             <p><b>分类：<a href="#" target="_blank">{{ article.column }}</a></b></p>
@@ -21,7 +21,7 @@
         <div class="col-2 py-1">
             <p><b>子分类：<a href="#" target="_blank">{{ article.tag }}</a></b></p>
         </div>
-    </div>
+    </div> -->
     
     <!-- row3 标题 -->
     <div class="row py-2">
@@ -36,9 +36,9 @@
             <img class="user-avatar" src="{{ article.author.avatar.url }}" alt="User Avatar">
         </div>
         <div class="col-3">
-            <p><b>作者：</b>{{ article.author }}</p>
-            <p><b>发表时间：</b>{{article.created|date:"Y-m-d H:i" }} </p>
-            <p><b>更新时间：</b>{{article.updated|date:"Y-m-d H:i" }} </p>
+            <p><b>作者：</b>{{ article.author }}<br>
+            <b>发表时间：</b>{{article.created|date:"Y-m-d H:i" }} <br>
+            <b>更新时间：</b>{{article.updated|date:"Y-m-d H:i" }} </p>
         </div>
         <div class="col-4">
             {% if user == article.author %}
@@ -55,8 +55,9 @@
             {% endif %}
         </div>
         <div class="col-3 float-right">
-            <p><b>浏览数：</b>{{ article.total_views }}</p>
-            <p><b>评论数：</b>{{ comments.count }}</p>
+            <p><b>浏览数：</b>{{ article.total_views }}
+            <br>
+            <b>评论数：</b>{{ comments.count }}</p>
         </div>
     </div>
 
@@ -88,8 +89,8 @@
     </div>
 
     <!-- row7 点赞，分享，没有具体分布，按钮都在同一行 -->
-    <div class="row">
-        <div class="col-12 py-1" style="background-color:#F8F8FF">
+    <div class="row py-1 bg-light">
+        <div class="col-12">
             <button class="btn btn-outline-danger" type="button" 
                 onclick="validate_is_like(
                             '{% url 'article:increase_likes' article.id %}',

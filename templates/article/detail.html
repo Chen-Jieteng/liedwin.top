@@ -142,70 +142,106 @@
     -->
 
 
-     <div class="row py-2">
-        <div class="col-12">
-            <hr>
-            {% if user.is_authenticated %}
-                <form action="{% url 'comment:post_comment' article.id %}" method="POST" class="my-3">
-                    {% csrf_token %}
-                    <div class="form-group">
-                        <label for="body"><strong>我也要发言：</strong></label>
+    <!-- row8 发表评论 -->
+    <div class="row">
+        <hr>
+        {% if user.is_authenticated %}
+        <div>
+            <form action="{% url 'comment:post_comment' article.id %}" method="POST">
+            {% csrf_token %}
+                <div class="form-group">
+                    <label for="body">
+                        <strong>
+                            我也要发言：
+                        </strong>
+                    </label>
+                    <div>
                         {{ comment_form.media }}
                         {{ comment_form.body }}
-                        <button type="submit" class="btn btn-primary mt-2">发送</button>
                     </div>
-                </form>
-            {% else %}
-                <div class="text-center my-3">
-                    <h5>请<a href="{% url 'userprofile:login' %}">登录</a>后回复</h5>
+                </div>
+                <!-- 提交按钮 -->
+                <button type="submit" class="btn btn-primary ">发送</button>
+            </form>
+        </div>
+        <br>
+        {% else %}
+            <br>
+            <h5 class="row justify-content-center">
+                请<a href="{% url 'userprofile:login' %}">登录</a>后回复
+            </h5>
+            <br>
+        {% endif %}
+        
+        {% load mptt_tags %}
+        <h5>共有{{ comments.count }}条评论</h5>
+        <!-- 遍历树形结构 -->
+        {% recursetree comments %}
+        {% with comment=node %}
+        <div class="{% if comment.reply_to %}
+                    offset-1 col-11
+                    {% else %}
+                    col-12
+                    {% endif %}"
+            id="comment_elem_{{ comment.id }}"
+        >
+            <hr>
+            <p>
+            <strong style="color: pink">{{ comment.user }}</strong>
+            <!-- 显示被回复人 -->
+            {% if comment.reply_to %}
+                <i class="far fa-arrow-alt-circle-right"
+                   style="color: cornflowerblue;"
+                ></i>
+                <strong style="color: pink">{{ comment.reply_to }}</strong>
+            {% endif %}
+            </p>
+            <div>{{ comment.body|safe }}</div>
+            <div>
+                <span style="color: gray">{{ comment.created|date:"Y-m-d H:i" }}</span>
+                <!-- 加载 modal 的按钮 -->
+                {% if user.is_authenticated %}
+                    <button type="button"
+                            class="btn btn-light btn-sm text-muted"
+                            onclick="load_modal({{ article.id }}, {{ comment.id }})"
+                    >
+                    回复
+                    </button>
+                {% else %}
+                    <a class="btn btn-light btn-sm text-muted"
+                        href="{% url 'userprofile:login' %}"
+                    >
+                    回复
+                    </a>
+                {% endif %}
+            </div>
+            <!-- model -->
+            <div class="modal fade"
+                 id="comment_{{ comment.id }}"
+                 tabindex="-1"
+                 role="dialog"
+                 aria-labelledby="CommentModalCenter"
+                 aria-hidden="true"
+            >
+                <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                    <div class="modal-content" style="height: 480px">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalCenterTitle">回复 {{ comment.user }}：</h5>
+                        </div>
+                        <div class="modal-body" id="modal_body_{{ comment.id }}"></div>
+                    </div>
+                </div>
+            </div>
+    
+            {% if not comment.is_leaf_node %}
+                <div class="children">
+                    {{ children }}
                 </div>
             {% endif %}
         </div>
-    </div>
-
-    <!-- 评论显示区 -->
-    <div class="row py-2">
-        <div class="col-12">
-            <h5>共有{{ comments.count }}条评论</h5>
-            {% recursetree comments %}
-                {% with comment=node %}
-                <div class="{% if comment.reply_to %}offset-1 col-11{% else %}col-12{% endif %}" id="comment_elem_{{ comment.id }}">
-                    <hr>
-                    <p><strong style="color: pink">{{ comment.user }}</strong>
-                    {% if comment.reply_to %}
-                        <i class="far fa-arrow-alt-circle-right" style="color: cornflowerblue;"></i>
-                        <strong style="color: pink">{{ comment.reply_to }}</strong>
-                    {% endif %}
-                    </p>
-                    <div>{{ comment.body|safe }}</div>
-                    <div>
-                        <span style="color: gray">{{ comment.created|date:"Y-m-d H:i" }}</span>
-                        {% if user.is_authenticated %}
-                            <button type="button" class="btn btn-light btn-sm text-muted" onclick="load_modal({{ article.id }}, {{ comment.id }})">回复</button>
-                        {% else %}
-                            <a class="btn btn-light btn-sm text-muted" href="{% url 'userprofile:login' %}">回复</a>
-                        {% endif %}
-                    </div>
-                    <!-- Modal -->
-                    <div class="modal fade" id="comment_{{ comment.id }}" tabindex="-1" role="dialog" aria-labelledby="CommentModalCenter" aria-hidden="true">
-                        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-                            <div class="modal-content" style="height: 480px">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="exampleModalCenterTitle">回复 {{ comment.user }}：</h5>
-                                </div>
-                                <div class="modal-body" id="modal_body_{{ comment.id }}"></div>
-                            </div>
-                        </div>
-                    </div>
-                    {% if not comment.is_leaf_node %}
-                        <div class="children">{{ children }}</div>
-                    {% endif %}
-                </div>
-                {% endwith %}
-            {% endrecursetree %}
-        </div>
-    </div>
-
+        {% endwith %}
+        {% endrecursetree %}
+    </div> 
 </div>
 
     

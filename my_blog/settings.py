@@ -27,6 +27,9 @@ SECRET_KEY = '__=s9@oixaun$x^g7-4#10wf_*7zvb8)kl1$j82fj&cyq%^o^3'
 # 部署到线上时为 False; 读者在本地调试时请修改为 True
 DEBUG = False
 
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
 ALLOWED_HOSTS = ['.liedwin.top','47.101.11.42']
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'

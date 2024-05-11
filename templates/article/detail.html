@@ -12,24 +12,24 @@
 <div class="container">
     
     <!-- row2 分类，子分类 -->
-    <div class="row text-light py-3" style="background-color:plum">
-        <div class="col-md-2 py-2">
+    <div class="row text-light py-2" style="background-color:plum">
+        <div class="col-2 py-1">
             <p><b>分类：<a href="#" target="_blank">{{ article.column }}</a></b></p>
         </div>
-        <div class="col-md-2 py-2">
+        <div class="col-2 py-1">
             <p><b>子分类：<a href="#" target="_blank">{{ article.tag }}</a></b></p>
         </div>
     </div>
     
     <!-- row3 标题 -->
-    <div class="row py-3">
+    <div class="row py-2">
         <h1 class="mt-4 mb-4 font-size:45px">
             <b>{{ article.title }}</b>
         </h1>
     </div>
 
     <!-- row4 6-发布时间，作者，编辑/删除，4-浏览数，评论数 -->
-    <div class="row py-3" style="background-color:#F8F8FF;">
+    <div class="row py-2" style="background-color:#F8F8FF;">
         <div class="col-2">
             <img class="user-avatar" src="{{ userprofile.avatar.url }}" alt="User Avatar">
         </div>
@@ -77,7 +77,7 @@
     </div>
     
     <!-- row6 左边3目录(后面做成展开缩放，现在先隐藏移动端的)，右边9正文 -->
-    <div class="row py-3">
+    <div class="row py-2">
         <div class="col-3 mt-4" id="sidebar" class="sidebar">
             <div class="sidebar__inner">
                 <h4><strong>目录</strong></h4>
@@ -93,8 +93,8 @@
     </div>
 
     <!-- row7 点赞，分享，没有具体分布，按钮都在同一行 -->
-    <div class="row" style="text-align:center;">
-        <div class="col-3 py-2">
+    <div class="row">
+        <div class="col-1 py-1" style="text-align:center;background-color:#F8F8FF">
             <button class="btn btn-outline-danger" type="button" 
                 onclick="validate_is_like(
                             '{% url 'article:increase_likes' article.id %}',
@@ -107,18 +107,15 @@
                 <span id="likes_number">{{ article.likes }}</span>
             </button>
         </div>
-        <div class="col-3 py-2">
+        <div class="col-1 py-1" style="text-align:center;>
             <button class="btn btn-outline-danger" type="button" 
                 onclick=""
             >
                 <span>分享</span>
-                <span><i class="fal fa-external-link"> </i></span>
+                <span><i class="fal fa-share-square"</i></span>
             </button>
         </div>
     </div>
-
-</div>
-
     
 <!--     相邻文章导航，暂时不用，后面弄成猜你喜欢推荐文章
                     <br>
@@ -143,112 +140,76 @@
                     {% endif %}
                     </div>
     -->
-   
-    
-    <!-- row8 发表评论 -->
-    <div class="row">
-        <hr>
-        {% if user.is_authenticated %}
-        <div>
-            <form action="{% url 'comment:post_comment' article.id %}" method="POST">
-            {% csrf_token %}
-                <div class="form-group">
-                    <label for="body">
-                        <strong>
-                            我也要发言：
-                        </strong>
-                    </label>
-                    <div>
+
+
+     <div class="row py-2">
+        <div class="col-12">
+            <hr>
+            {% if user.is_authenticated %}
+                <form action="{% url 'comment:post_comment' article.id %}" method="POST" class="my-3">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="body"><strong>我也要发言：</strong></label>
                         {{ comment_form.media }}
                         {{ comment_form.body }}
+                        <button type="submit" class="btn btn-primary mt-2">发送</button>
                     </div>
+                </form>
+            {% else %}
+                <div class="text-center my-3">
+                    <h5>请<a href="{% url 'userprofile:login' %}">登录</a>后回复</h5>
                 </div>
-                <!-- 提交按钮 -->
-                <button type="submit" class="btn btn-primary ">发送</button>
-            </form>
+            {% endif %}
         </div>
-        <br>
-        {% else %}
-            <br>
-            <h5 class="row justify-content-center">
-                请<a href="{% url 'userprofile:login' %}">登录</a>后回复
-            </h5>
-            <br>
-        {% endif %}
     </div>
 
-    <!-- row9 发表评论 -->
-    {% load mptt_tags %}
-    <h5>共有{{ comments.count }}条评论</h5>
-    <div class="row">
-        <!-- 遍历树形结构 -->
-        {% recursetree comments %}
-        {% with comment=node %}
-        <div class="{% if comment.reply_to %}
-                    offset-1 col-11
-                    {% else %}
-                    col-12
-                    {% endif %}"
-            id="comment_elem_{{ comment.id }}"
-        >
-            <hr>
-            <p>
-            <strong style="color: pink">{{ comment.user }}</strong>
-            <!-- 显示被回复人 -->
-            {% if comment.reply_to %}
-                <i class="far fa-arrow-alt-circle-right"
-                   style="color: cornflowerblue;"
-                ></i>
-                <strong style="color: pink">{{ comment.reply_to }}</strong>
-            {% endif %}
-            </p>
-            <div>{{ comment.body|safe }}</div>
-            <div>
-                <span style="color: gray">{{ comment.created|date:"Y-m-d H:i" }}</span>
-                <!-- 加载 modal 的按钮 -->
-                {% if user.is_authenticated %}
-                    <button type="button"
-                            class="btn btn-light btn-sm text-muted"
-                            onclick="load_modal({{ article.id }}, {{ comment.id }})"
-                    >
-                    回复
-                    </button>
-                {% else %}
-                    <a class="btn btn-light btn-sm text-muted"
-                        href="{% url 'userprofile:login' %}"
-                    >
-                    回复
-                    </a>
-                {% endif %}
-            </div>
-            <!-- model -->
-            <div class="modal fade"
-                 id="comment_{{ comment.id }}"
-                 tabindex="-1"
-                 role="dialog"
-                 aria-labelledby="CommentModalCenter"
-                 aria-hidden="true"
-            >
-                <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-                    <div class="modal-content" style="height: 480px">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="exampleModalCenterTitle">回复 {{ comment.user }}：</h5>
+    <!-- 评论显示区 -->
+    <div class="row py-2">
+        <div class="col-12">
+            <h5>共有{{ comments.count }}条评论</h5>
+            {% recursetree comments %}
+                {% with comment=node %}
+                <div class="{% if comment.reply_to %}offset-1 col-11{% else %}col-12{% endif %}" id="comment_elem_{{ comment.id }}">
+                    <hr>
+                    <p><strong style="color: pink">{{ comment.user }}</strong>
+                    {% if comment.reply_to %}
+                        <i class="far fa-arrow-alt-circle-right" style="color: cornflowerblue;"></i>
+                        <strong style="color: pink">{{ comment.reply_to }}</strong>
+                    {% endif %}
+                    </p>
+                    <div>{{ comment.body|safe }}</div>
+                    <div>
+                        <span style="color: gray">{{ comment.created|date:"Y-m-d H:i" }}</span>
+                        {% if user.is_authenticated %}
+                            <button type="button" class="btn btn-light btn-sm text-muted" onclick="load_modal({{ article.id }}, {{ comment.id }})">回复</button>
+                        {% else %}
+                            <a class="btn btn-light btn-sm text-muted" href="{% url 'userprofile:login' %}">回复</a>
+                        {% endif %}
+                    </div>
+                    <!-- Modal -->
+                    <div class="modal fade" id="comment_{{ comment.id }}" tabindex="-1" role="dialog" aria-labelledby="CommentModalCenter" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                            <div class="modal-content" style="height: 480px">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="exampleModalCenterTitle">回复 {{ comment.user }}：</h5>
+                                </div>
+                                <div class="modal-body" id="modal_body_{{ comment.id }}"></div>
+                            </div>
                         </div>
-                        <div class="modal-body" id="modal_body_{{ comment.id }}"></div>
                     </div>
+                    {% if not comment.is_leaf_node %}
+                        <div class="children">{{ children }}</div>
+                    {% endif %}
                 </div>
-            </div>
-
-            {% if not comment.is_leaf_node %}
-                <div class="children">
-                    {{ children }}
-                </div>
-            {% endif %}
-        </div>
-            {% endwith %}
+                {% endwith %}
             {% endrecursetree %}
+        </div>
     </div>
-</div> 
+
+</div>
+
+    
+
 
 <!-- 样式 -->
 <style>

@@ -146,7 +146,7 @@
     -->
    
     
-<!--     <!-- row8 发表评论 -->
+<!--     row8 发表评论
     <div class="row">
         <hr>
         {% if user.is_authenticated %}
@@ -178,7 +178,8 @@
         {% endif %}
     </div>
 
-    <!-- row9 发表评论 -->
+    row9 发表评论
+
     {% load mptt_tags %}
     <h5>共有{{ comments.count }}条评论</h5>
     <div class="row">
@@ -223,7 +224,7 @@
                     {% endif %}
                 </div>
 
-                <!-- Modal -->
+
                 <div class="modal fade"
                      id="comment_{{ comment.id }}"
                      tabindex="-1"
@@ -251,7 +252,8 @@
             {% endrecursetree %}
         </div>
     </div>
-</div> -->
+</div> 
+-->
 
 <!-- 样式 -->
 <style>

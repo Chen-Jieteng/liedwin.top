@@ -11,7 +11,7 @@
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/YOUR_VERSION/css/all.min.css" rel="stylesheet">
 
 
-<div class="container">
+<div class="container-fuild">
     
     <!-- row2 分类，子分类 -->
     <div class="row text-light py-2" style="background-color:plum">
@@ -31,19 +31,16 @@
     </div>
 
     <!-- row4 6-发布时间，作者，编辑/删除，4-浏览数，评论数 -->
-    <div class="row py-2" style="background-color:#F8F8FF;">
+    <div class="row py-2 bg-light">
         <div class="col-2">
-            <img class="user-avatar" src="{{ userprofile.avatar.url }}" alt="User Avatar">
+            <img class="user-avatar" src="{{ article.author.avatar.url }}" alt="User Avatar">
         </div>
-        <div class="col-5">
-            <div class="row">
-                <p><b>作者：</b>{{ article.author }}</p>
-            </div>
-            <div class="row">
-                <p><b>发表时间：</b>{{article.created|date:"Y-m-d H:i" }} </p>
-            </div>
+        <div class="col-3">
+            <p><b>作者：</b>{{ article.author }}</p>
+            <p><b>发表时间：</b>{{article.created|date:"Y-m-d H:i" }} </p>
+            <p><b>更新时间：</b>{{article.updated|date:"Y-m-d H:i" }} </p>
         </div>
-        <div class="col-2">
+        <div class="col-4">
             {% if user == article.author %}
             <div class="row">
                 <a href="#" onclick="confirm_safe_delete()">删除</a>
@@ -57,13 +54,9 @@
             </div>
             {% endif %}
         </div>
-        <div class="col-3">
-            <div class="row">
-                <p><b>浏览数：</b>{{ article.total_views }}</p>
-            </div>
-            <div class="row">
-                <p><b>评论数：</b>{{ comments.count }}</p>
-            </div>
+        <div class="col-3 float-right">
+            <p><b>浏览数：</b>{{ article.total_views }}</p>
+            <p><b>评论数：</b>{{ comments.count }}</p>
         </div>
     </div>
 
@@ -96,7 +89,7 @@
 
     <!-- row7 点赞，分享，没有具体分布，按钮都在同一行 -->
     <div class="row">
-        <div class="col-1 py-1" style="text-align:center;background-color:#F8F8FF">
+        <div class="col-12 py-1" style="text-align:center;background-color:#F8F8FF">
             <button class="btn btn-outline-danger" type="button" 
                 onclick="validate_is_like(
                             '{% url 'article:increase_likes' article.id %}',

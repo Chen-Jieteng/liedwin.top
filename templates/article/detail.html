@@ -14,10 +14,10 @@
     <!-- row2 分类，子分类 -->
     <div class="row text-light py-3 bg-plum">
         <div class="col-md-2">
-            <p><b>分类：<a href="#" target="_blank">旅游</a></b></p>
+            <p><b>分类：<a href="#" target="_blank">{{article.column}}</a></b></p>
         </div>
         <div class="col-md-2">
-            <p><b>子分类：<a href="#" target="_blank">北京</a></b></p>
+            <p><b>子分类：<a href="#" target="_blank">{{article.tags}}</a></b></p>
         </div>
     </div>
     
@@ -257,8 +257,19 @@
     </div>
 </div>
 
-<!-- 粘性侧边栏样式 -->
+<!-- 样式 -->
 <style>
+    .user-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+    @media (max-width: 768px) {
+        .sidebar {
+            display: none;  /* 在移动设备上隐藏目录 */
+        }
+    }
     .sidebar{
         will-change: min-height;
     }

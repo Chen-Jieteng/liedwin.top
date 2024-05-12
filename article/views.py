@@ -226,7 +226,7 @@ def article_update(request, id):
     # 判断用户是否为 POST 提交表单数据
     if request.method == "POST":
         # 将提交的数据赋值到表单实例中
-        article_post_form = ArticlePostForm(data=request.POST)
+        article_post_form = ArticlePostForm(data=request.POST, instance=article)
         # 判断提交的数据是否满足模型的要求
         if article_post_form.is_valid():
             # 保存新写入的 title、body 数据并保存

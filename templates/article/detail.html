@@ -31,6 +31,17 @@
         </h1>
     </div>
 
+     <!-- row5 57分照片，摘要 -->
+    <div class="row">
+        <div class="col-5">
+            <img src="{{ article.avatar.url }}" alt="avatar" style="max-width:auto; border-radius: 20px">
+        </div>
+        <div class="col-7">
+            <p><b>摘要：</b></p>
+            <p>这里暂时没有写相应代码</p>
+        </div>
+    </div>
+    
     <!-- row4 6-发布时间，作者，编辑/删除，4-浏览数，评论数 -->
     <div class="row py-2 bg-light">
         <div class="col-2">
@@ -59,17 +70,6 @@
             <p><b>浏览数：</b>{{ article.total_views }}
             <br>
             <b>评论数：</b>{{ comments.count }}</p>
-        </div>
-    </div>
-
-    <!-- row5 57分照片，摘要 -->
-    <div class="row">
-        <div class="col-5">
-            <img src="{{ article.avatar.url }}" alt="avatar" style="max-width:auto; border-radius: 20px">
-        </div>
-        <div class="col-7">
-            <p><b>摘要：</b></p>
-            <p>这里暂时没有写相应代码</p>
         </div>
     </div>
     

@@ -13,8 +13,9 @@
 
 <!-- 定义放置文章标题的div容器 -->
 <div class="container">
+    <hr>
     <!-- 面包屑导航 -->
-    <nav aria-label="breadcrumb" class="top-nav">
+    <nav aria-label="breadcrumb" class="top-nav py-1 bg-light">
         <ol class="breadcrumb">
             <li class="breadcrumb-item">
                 <a href="{% url 'article:article_list' %}?search={{ search }}&column={{ column }}&tag={{ tag }}">
@@ -47,6 +48,7 @@
             {% endif %}
         {% endif %}
     </nav>
+    <hr>
 
     <!-- 列表循环 -->
     <div class="row mt-2">

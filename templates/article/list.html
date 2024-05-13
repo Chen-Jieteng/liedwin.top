@@ -13,36 +13,29 @@
 
 <!-- 定义放置文章标题的div容器 -->
 <div class="container">
-
-
-        <!-- 面包屑导航 -->
-        <nav class="row" aria-label="breadcrumb" style="background-color: #e9ecef;">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item">
-                        <a href="{% url 'article:article_list' %}?search={{ search }}&column={{ column }}&tag={{ tag }}">
-                            最新
-                        </a>
-                    </li>
-                    <li class="breadcrumb-item">
-                        <a href="{% url 'article:article_list' %}?order=total_views&search={{ search }}&column={{ column }}&tag={{ tag }}">
-                            最热
-                        </a>
-                    </li>
-                </ol>
-            <!-- 搜索栏 -->
-
-                <div class="col-auto ml-auto">
-                    <form class="form-inline" >
-                        <label class="sr-only">content</label>
-                        <input type="text"
-                            class="form-control mb-2 mr-sm-2"
-                            name="search"
-                            placeholder="搜索文章..."
-                            required
-                        >
-                    </form>
-                </div>
-
+    <!-- 面包屑导航 -->
+    <nav aria-label="breadcrumb" class="top-nav">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'article:article_list' %}?search={{ search }}&column={{ column }}&tag={{ tag }}">
+                    最新
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{% url 'article:article_list' %}?order=total_views&search={{ search }}&column={{ column }}&tag={{ tag }}">
+                    最热
+                </a>
+            </li>
+        </ol>
+        <!-- 搜索栏 -->
+        <form class="form-inline" >
+            <label class="sr-only">content</label>
+            <input type="text"
+                class="form-control mb-2 mr-sm-2"
+                name="search"
+                placeholder="搜索文章..."
+                required
+            >
         <!-- 搜索提示语 -->
         {% if search %}
             {% if articles %}
@@ -53,7 +46,7 @@
                 <hr>
             {% endif %}
         {% endif %}
-        </nav>
+    </nav>
 
     <!-- 列表循环 -->
     <div class="row mt-2">

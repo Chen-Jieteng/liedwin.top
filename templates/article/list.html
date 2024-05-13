@@ -16,7 +16,7 @@
     <hr>
     <!-- 面包屑导航 -->
     <nav aria-label="breadcrumb" class="top-nav py-1 bg-light">
-        <ol class="breadcrumb">
+        <ol class="breadcrumb ml-sm-2">
             <li class="breadcrumb-item">
                 <a href="{% url 'article:article_list' %}?search={{ search }}&column={{ column }}&tag={{ tag }}">
                     最新
@@ -32,7 +32,7 @@
         <form class="form-inline" >
             <label class="sr-only">content</label>
             <input type="text"
-                class="form-control mb-2 mr-sm-2"
+                class="form-control mr-sm-2"
                 name="search"
                 placeholder="搜索文章..."
                 required
@@ -185,11 +185,7 @@
     }
 
     .breadcrumb {
-        margin-bottom: 0;  
-    }
-    
-    .form-inline {
-        margin-bottom: 0;  
+        background-color: transparent;
     }
 </style>
 

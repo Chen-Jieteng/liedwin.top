@@ -16,7 +16,7 @@
     <hr>
     <!-- 面包屑导航 -->
     <nav aria-label="breadcrumb" class="top-nav py-1 bg-light">
-        <ol class="breadcrumb ml-sm-2">
+        <ol class="breadcrumb">
             <li class="breadcrumb-item">
                 <a href="{% url 'article:article_list' %}?search={{ search }}&column={{ column }}&tag={{ tag }}">
                     最新
@@ -186,6 +186,10 @@
 
     .breadcrumb {
         background-color: transparent;
+        margin-bottom: 0;
+    }
+     .form-inline {
+        margin-bottom: 0; 
     }
 </style>
 

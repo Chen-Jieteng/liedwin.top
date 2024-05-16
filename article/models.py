@@ -97,42 +97,42 @@ class ArticlePost(models.Model):
     # 保存时处理图片
     def save(self, *args, **kwargs):
     # 调用原有的 save() 的功能
-    super(ArticlePost, self).save(*args, **kwargs)
-
-    # 固定宽度缩放图片大小
-    if self.avatar and not kwargs.get('update_fields'):
-        if self.avatar.path.lower().endswith('.gif'):
-            # 如果是GIF文件，不进行处理，直接返回
-            return
-        img = Image.open(self.avatar)
-        if img.format == 'GIF':
-            frames = ImageSequence.Iterator(img)
-
-            # 处理每一帧
-            processed_frames = []
-            for frame in frames:
-                # 调整每帧的大小
-                frame = frame.convert('RGBA')
-                frame = frame.resize((400, int(frame.height * 400 / frame.width)), Image.LANCZOS)
-                processed_frames.append(frame)
-
-            # 保存修改后的帧到一个新的 GIF 文件
-            processed_frames[0].save(
-                self.avatar.path,
-                save_all=True,
-                append_images=processed_frames[1:],
-                loop=0,
-                duration=img.info['duration'],
-                disposal=img.info.get('disposal', 2)
-            )
-        else:
-            # 非GIF图片的处理
+        article = super(ArticlePost, self).save(*args, **kwargs)
+    
+        # 固定宽度缩放图片大小
+        if self.avatar and not kwargs.get('update_fields'):
+            if self.avatar.path.lower().endswith('.gif'):
+                # 如果是GIF文件，不进行处理，直接返回
+                return
             img = Image.open(self.avatar)
-            (x, y) = img.size
-            new_x = 400
-            new_y = int(new_x * (y / x))
-            resized_image = img.resize((new_x, new_y), Image.LANCZOS)
-            resized_image.save(self.avatar.path)
+            if img.format == 'GIF':
+                frames = ImageSequence.Iterator(img)
+    
+                # 处理每一帧
+                processed_frames = []
+                for frame in frames:
+                    # 调整每帧的大小
+                    frame = frame.convert('RGBA')
+                    frame = frame.resize((400, int(frame.height * 400 / frame.width)), Image.LANCZOS)
+                    processed_frames.append(frame)
+    
+                # 保存修改后的帧到一个新的 GIF 文件
+                processed_frames[0].save(
+                    self.avatar.path,
+                    save_all=True,
+                    append_images=processed_frames[1:],
+                    loop=0,
+                    duration=img.info['duration'],
+                    disposal=img.info.get('disposal', 2)
+                )
+            else:
+                # 非GIF图片的处理
+                img = Image.open(self.avatar)
+                (x, y) = img.size
+                new_x = 400
+                new_y = int(new_x * (y / x))
+                resized_image = img.resize((new_x, new_y), Image.LANCZOS)
+                resized_image.save(self.avatar.path)
 
 
     def was_created_recently(self):

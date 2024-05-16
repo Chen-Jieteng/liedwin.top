@@ -258,20 +258,20 @@
     }
     #sidebar {
         position: relative; /* 或其他需要的定位 */
+        
     }
 
     /* 小屏幕上的样式 */
     @media (max-width: 768px) {
         #sidebar {
-            position: fixed;
-            top: 0; /* 将其固定在视口顶部 */
-            width: 100%; /* 全屏宽 */
-            z-index: 1000; /* 确保它在其他内容之上 */
+            position: relative;
+            width: 100%; 
+            z-index: 1; 
         }
     
         /* 调整内容部分的顶部间距，防止被目录覆盖 */
         .content {
-            padding-top: 50px; /* 根据目录的实际高度调整 */
+            padding-top: 0; /* 根据目录的实际高度调整 */
         }
     }
 </style>

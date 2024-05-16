@@ -65,6 +65,32 @@
     #push {
         height: 60px;
     }
+
+    .container {
+        width: 100%; /* 默认宽度为100%，适用于较小设备 */
+        padding: 15px;
+        margin: 0 auto;
+    }
+    /* 大于768px的屏幕 */
+    @media (min-width: 768px) {
+        .container {
+            width: 750px; /* 调整宽度为750px */
+        }
+    }
+    
+    /* 大于992px的屏幕 */
+    @media (min-width: 992px) {
+        .container {
+            width: 970px; /* 调整宽度为970px */
+        }
+    }
+    
+    /* 大于1200px的屏幕 */
+    @media (min-width: 1200px) {
+        .container {
+            width: 1170px; /* 调整宽度为1170px */
+        }
+    }
 </style>
 
 </body>

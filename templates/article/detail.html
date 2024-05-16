@@ -256,6 +256,24 @@
         border-radius: 100%;
         object-fit: cover;
     }
+    #sidebar {
+        position: relative; /* 或其他需要的定位 */
+    }
+
+    /* 小屏幕上的样式 */
+    @media (max-width: 768px) {
+        #sidebar {
+            position: fixed;
+            top: 0; /* 将其固定在视口顶部 */
+            width: 100%; /* 全屏宽 */
+            z-index: 1000; /* 确保它在其他内容之上 */
+        }
+    
+        /* 调整内容部分的顶部间距，防止被目录覆盖 */
+        .content {
+            padding-top: 50px; /* 根据目录的实际高度调整 */
+        }
+    }
 </style>
 
 <script>
@@ -403,5 +421,32 @@
         // 刷新并定位到锚点
         window.location.replace(next_url + "#comment_elem_" + new_comment_id);
     };
+
+    // 目控控制
+    function initializeStickySidebar() {
+        $('#sidebar').stickySidebar({
+            topSpacing: 20,
+            bottomSpacing: 20,
+        });
+    }
+
+    function destroyStickySidebar() {
+        $('#sidebar').trigger("stickySidebar:detach");
+    }
+    
+    // 初始页面加载时根据屏幕尺寸启用或禁用
+    if ($(window).width() > 768) {
+        initializeStickySidebar();
+    }
+    
+    // 窗口尺寸变化时重新检查
+    $(window).resize(function() {
+        if ($(window).width() > 768) {
+            initializeStickySidebar();
+        } else {
+            destroyStickySidebar();
+        }
+    });
+
 </script>
 {% endblock script %}

@@ -96,14 +96,16 @@ class ArticlePost(models.Model):
 
     # 保存时处理图片
     def save(self, *args, **kwargs):
-        # 调用原有的 save() 的功能
-        article = super(ArticlePost, self).save(*args, **kwargs)
+    # 调用原有的 save() 的功能
+    super(ArticlePost, self).save(*args, **kwargs)
 
-        # 固定宽度缩放图片大小
-        if self.avatar and not kwargs.get('update_fields'):
-            if self.avatar.path.lower().endswith('.gif'):
-            return article 
-            img = Image.open(self.avatar)
+    # 固定宽度缩放图片大小
+    if self.avatar and not kwargs.get('update_fields'):
+        if self.avatar.path.lower().endswith('.gif'):
+            # 如果是GIF文件，不进行处理，直接返回
+            return
+        img = Image.open(self.avatar)
+        if img.format == 'GIF':
             frames = ImageSequence.Iterator(img)
 
             # 处理每一帧
@@ -123,16 +125,15 @@ class ArticlePost(models.Model):
                 duration=img.info['duration'],
                 disposal=img.info.get('disposal', 2)
             )
-
         else:
-            image = Image.open(self.avatar)
-            (x, y) = image.size
+            # 非GIF图片的处理
+            img = Image.open(self.avatar)
+            (x, y) = img.size
             new_x = 400
             new_y = int(new_x * (y / x))
-            resized_image = image.resize((new_x, new_y), Image.LANCZOS)
+            resized_image = img.resize((new_x, new_y), Image.LANCZOS)
             resized_image.save(self.avatar.path)
 
-        return article
 
     def was_created_recently(self):
         # 若文章是 1 分钟内发表的，则返回 True

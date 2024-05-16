@@ -382,10 +382,21 @@
 <!-- 粘性侧边栏 -->
 <script src="{% static 'sticky_sidebar/jquery.sticky-sidebar.min.js' %}"></script>
 <script type="text/javascript">
-    $('#sidebar').stickySidebar({
-        topSpacing: 20,
-        bottomSpacing: 20,
-    });
+    function checkStickySidebar() {
+        if ($(window).width() > 768) {
+            // 只在宽屏上启用stickySidebar
+            $('#sidebar').stickySidebar({
+                topSpacing: 20,
+                bottomSpacing: 20,
+            });
+        } else {
+            // 在小屏幕上禁用stickySidebar
+            $('#sidebar').trigger("stickySidebar:detach");
+        }
+    }
+    // 页面加载和尺寸变化时检查
+    $(document).ready(checkStickySidebar);
+    $(window).resize(checkStickySidebar);
 </script>
 
 <!-- Ckeditor自适应 -->
@@ -421,23 +432,6 @@
         // 刷新并定位到锚点
         window.location.replace(next_url + "#comment_elem_" + new_comment_id);
     };
-
-    // 目控控制
-    function checkStickySidebar() {
-        if ($(window).width() > 768) {
-            // 只在宽屏上启用stickySidebar
-            $('#sidebar').stickySidebar({
-                topSpacing: 20,
-                bottomSpacing: 20,
-            });
-        } else {
-            // 在小屏幕上禁用stickySidebar
-            $('#sidebar').trigger("stickySidebar:detach");
-        }
-    }
-
-// 页面加载和尺寸变化时检查
-$(document).ready(checkStickySidebar);
-$(window).resize(checkStickySidebar);
+    
 </script>
 {% endblock script %}

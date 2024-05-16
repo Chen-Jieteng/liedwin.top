@@ -188,9 +188,23 @@
         background-color: transparent;
         margin-bottom: 0;
     }
-     .form-inline {
-        margin-bottom: 0; 
+    @media (max-width: 576px) { 
+        .form-inline input[type="text"] {
+            width: 100%;
+            margin: 10px 0; 
+        }
+        .form-inline .form-control {
+            width: 100%; 
+        }
     }
+    @media (max-width: 576px) {
+    .form-inline {
+        width: auto;
+        padding: 0 15px; 
+        }
+    }
+
+
 </style>
 
 {% endblock content %}

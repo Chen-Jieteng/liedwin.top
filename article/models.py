@@ -101,6 +101,30 @@ class ArticlePost(models.Model):
 
         # 固定宽度缩放图片大小
         if self.avatar and not kwargs.get('update_fields'):
+            if self.avatar.path.lower().endswith('.gif'):
+            return article 
+            img = Image.open(self.avatar)
+            frames = ImageSequence.Iterator(img)
+
+            # 处理每一帧
+            processed_frames = []
+            for frame in frames:
+                # 调整每帧的大小
+                frame = frame.convert('RGBA')
+                frame = frame.resize((400, int(frame.height * 400 / frame.width)), Image.LANCZOS)
+                processed_frames.append(frame)
+
+            # 保存修改后的帧到一个新的 GIF 文件
+            processed_frames[0].save(
+                self.avatar.path,
+                save_all=True,
+                append_images=processed_frames[1:],
+                loop=0,
+                duration=img.info['duration'],
+                disposal=img.info.get('disposal', 2)
+            )
+
+        else:
             image = Image.open(self.avatar)
             (x, y) = image.size
             new_x = 400

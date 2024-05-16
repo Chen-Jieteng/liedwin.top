@@ -78,7 +78,7 @@
     <!-- row6 左边3目录(后面做成展开缩放，现在先隐藏移动端的)，右边9正文 -->
     <div class="row py-2">
         <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3 mt-4" id="sidebar" class="sidebar">
-            <div class="sidebar__inner">
+            <div class="sidebar_inner">
                 <h4><strong>目录</strong></h4>
                 <hr>
                 <div>
@@ -86,7 +86,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-12 col-sm-12 col-md-8 col-lg-9 col-xl-9">
+        <div>
             <p>{{ article.body|safe }}</p>
         </div>
     </div>
@@ -255,20 +255,6 @@
         height: auto;
         border-radius: 100%;
         object-fit: cover;
-    }
-    @media (max-width: 768px) {
-        .sidebar {
-            display: none;  /* 在移动设备上隐藏目录 */
-        }
-    }
-    .sidebar{
-        will-change: min-height;
-    }
-
-    .sidebar__inner{
-        transform: translate(0, 0); /* For browsers don't support translate3d. */
-        transform: translate3d(0, 0, 0);
-        will-change: position, transform;
     }
 </style>
 

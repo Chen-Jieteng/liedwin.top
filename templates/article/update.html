@@ -1,24 +1,13 @@
-<!-- extends表明此页面继承自 base.html 文件 -->
 {% extends "base.html" %} {% load static %}
-<!-- 写入 base.html 中定义的 title -->
 {% block title %} 更新文章 {% endblock title %}
-<!-- 写入 base.html 中定义的 content -->
 {% block content %}
-<!-- 写文章表单 -->
 <div class="container">
     <div class="row">
         <div class="col-12">
             <br>
-            <!-- 提交文章的表单 -->
             <form method="post" action="." enctype="multipart/form-data">
-                <!-- Django中需要POST数据的地方都必须有csrf_token -->
-                {% csrf_token %}
-
-                <!-- 文章标题 -->
                 <div class="form-group">
-                    <!-- 标签 -->
                     <label for="title">文章标题</label>
-                    <!-- 在 value 属性中指定文本框的初始值为旧的内容，即 article 对象中的 title 字段 -->
                     <input type="text" class="form-control" id="title" name="title" value="{{ article.title }}">
                 </div>
 
@@ -41,6 +30,13 @@
                         {% endfor %}
                     </select>
                 </div>
+
+                <div class="form-group">
+                    <button type="button" class="btn btn-secondary" id="switch-to-ckeditor">使用 CKEditor</button>
+                    <button type="button" class="btn btn-secondary" id="switch-to-markdown">使用 Markdown</button>
+                </div>
+                
+                <input type="hidden" id="editor_type" name="editor_type" value="{{ article.editor_type|default:"markdown" }}">
 
                 <!-- 文章标题图 -->
                 <div class="form-group">
@@ -69,22 +65,29 @@
     </div>
 </div>
 
-<!-- 引入 CKEditor 的 JavaScript 文件 -->
 <script src="{% static 'ckeditor/ckeditor.js' %}"></script>
-<!-- 引入 Markdown 编辑器的 JavaScript 文件（例如 SimpleMDE） -->
 <script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
 
 <script>
-    let editorType = 'markdown';
-    let simplemde = new SimpleMDE({ element: document.getElementById("body") });
+    let editorType = '{{ article.editor_type|default:"markdown" }}';
+    let simplemde = null;
+
+    if (editorType === 'ckeditor') {
+        CKEDITOR.replace('body');
+    } else {
+        simplemde = new SimpleMDE({ element: document.getElementById("body") });
+    }
 
     document.getElementById('switch-to-ckeditor').addEventListener('click', function() {
         if (editorType !== 'ckeditor') {
-            simplemde.toTextArea();
-            simplemde = null;
+            if (simplemde) {
+                simplemde.toTextArea();
+                simplemde = null;
+            }
             CKEDITOR.replace('body');
             editorType = 'ckeditor';
+            document.getElementById('editor_type').value = 'ckeditor';
         }
     });
 
@@ -95,6 +98,7 @@
             }
             simplemde = new SimpleMDE({ element: document.getElementById("body") });
             editorType = 'markdown';
+            document.getElementById('editor_type').value = 'markdown';
         }
     });
 </script>

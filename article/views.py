@@ -1,36 +1,17 @@
-# 引入redirect重定向模块
 from django.shortcuts import render, redirect, get_object_or_404
-# 引入User模型
 from django.contrib.auth.models import User
-# 引入HttpResponse
 from django.http import HttpResponse
-# 导入数据模型ArticlePost, ArticleColumn
 from .models import ArticlePost, ArticleColumn
-# 引入刚才定义的ArticlePostForm表单类
 from .forms import ArticlePostForm
-# 引入markdown模块
 import markdown
-# 引入login装饰器
 from django.contrib.auth.decorators import login_required
-# 引入分页模块
 from django.core.paginator import Paginator
-# 引入搜索 Q 对象
 from django.db.models import Q
-# Comment 模型
 from comment.models import Comment
-
 from comment.forms import CommentForm
-
-# 通用类视图
 from django.views import View
 from django.views.generic import ListView, DetailView
 from django.views.generic.edit import CreateView
-
-# from my_blog.settings import LOGGING
-# import logging
-
-# logging.config.dictConfig(LOGGING)
-# logger = logging.getLogger('django.request')
 
 
 # 文章列表
@@ -243,6 +224,8 @@ def article_update(request, id):
                 article.avatar = request.FILES.get('avatar')
 
             article.tags.set(*request.POST.get('tags').split(','), clear=True)
+
+            article.editor_type = request.POST['editor_type']
             article.save()
             # 完成后返回到修改后的文章中。需传入文章的 id 值
             return redirect("article:article_detail", id=id)

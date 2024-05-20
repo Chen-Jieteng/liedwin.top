@@ -68,4 +68,34 @@
         </div>
     </div>
 </div>
+
+<!-- 引入 CKEditor 的 JavaScript 文件 -->
+<script src="{% static 'ckeditor/ckeditor.js' %}"></script>
+<!-- 引入 Markdown 编辑器的 JavaScript 文件（例如 SimpleMDE） -->
+<script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
+
+<script>
+    let editorType = 'markdown';
+    let simplemde = new SimpleMDE({ element: document.getElementById("body") });
+
+    document.getElementById('switch-to-ckeditor').addEventListener('click', function() {
+        if (editorType !== 'ckeditor') {
+            simplemde.toTextArea();
+            simplemde = null;
+            CKEDITOR.replace('body');
+            editorType = 'ckeditor';
+        }
+    });
+
+    document.getElementById('switch-to-markdown').addEventListener('click', function() {
+        if (editorType !== 'markdown') {
+            if (CKEDITOR.instances.body) {
+                CKEDITOR.instances.body.destroy();
+            }
+            simplemde = new SimpleMDE({ element: document.getElementById("body") });
+            editorType = 'markdown';
+        }
+    });
+</script>
 {% endblock content %}

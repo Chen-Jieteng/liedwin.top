@@ -45,42 +45,42 @@ class ArticlePost(models.Model):
 
 
     class Meta:
-    def __str__(self):
-        return self.title
-
-    def get_absolute_url(self):
-        return reverse('article:article_detail', args=[self.id])
-
-    def save(self, *args, **kwargs):
-        article = super(ArticlePost, self).save(*args, **kwargs)
-        if self.avatar and not kwargs.get('update_fields'):
-            if self.avatar.path.lower().endswith('.gif'):
-                return
-            img = Image.open(self.avatar)
-            if img.format == 'GIF':
-                frames = ImageSequence.Iterator(img)
+        def __str__(self):
+            return self.title
     
-                processed_frames = []
-                for frame in frames:
-                    frame = frame.convert('RGBA')
-                    frame = frame.resize((400, int(frame.height * 400 / frame.width)), Image.LANCZOS)
-                    processed_frames.append(frame)
+        def get_absolute_url(self):
+            return reverse('article:article_detail', args=[self.id])
     
-                processed_frames[0].save(
-                    self.avatar.path,
-                    save_all=True,
-                    append_images=processed_frames[1:],
-                    loop=0,
-                    duration=img.info['duration'],
-                    disposal=img.info.get('disposal', 2)
-                )
-            else:
+        def save(self, *args, **kwargs):
+            article = super(ArticlePost, self).save(*args, **kwargs)
+            if self.avatar and not kwargs.get('update_fields'):
+                if self.avatar.path.lower().endswith('.gif'):
+                    return
                 img = Image.open(self.avatar)
-                (x, y) = img.size
-                new_x = 400
-                new_y = int(new_x * (y / x))
-                resized_image = img.resize((new_x, new_y), Image.LANCZOS)
-                resized_image.save(self.avatar.path)
+                if img.format == 'GIF':
+                    frames = ImageSequence.Iterator(img)
+        
+                    processed_frames = []
+                    for frame in frames:
+                        frame = frame.convert('RGBA')
+                        frame = frame.resize((400, int(frame.height * 400 / frame.width)), Image.LANCZOS)
+                        processed_frames.append(frame)
+        
+                    processed_frames[0].save(
+                        self.avatar.path,
+                        save_all=True,
+                        append_images=processed_frames[1:],
+                        loop=0,
+                        duration=img.info['duration'],
+                        disposal=img.info.get('disposal', 2)
+                    )
+                else:
+                    img = Image.open(self.avatar)
+                    (x, y) = img.size
+                    new_x = 400
+                    new_y = int(new_x * (y / x))
+                    resized_image = img.resize((new_x, new_y), Image.LANCZOS)
+                    resized_image.save(self.avatar.path)
 
 
     def was_created_recently(self):

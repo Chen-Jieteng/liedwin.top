@@ -135,46 +135,107 @@
         {% endfor %}
     </div>
 
-    <!-- 页码导航 -->
-    <div class="pagination row">
-        <div class="m-auto">
-            <span class="step-links">
-                <!-- 如果不是第一页，则显示上翻按钮 -->
+    <!-- 修改为方形分页导航 -->
+    <nav aria-label="Page navigation" class="my-4">
+        <div class="d-flex justify-content-center align-items-center">
+            <ul class="pagination mb-0">
+                <!-- 上一页按钮 -->
                 {% if articles.has_previous %}
-                    <a href="?page=1&order={{ order }}&search={{ search }}&column={{ column }}&tag={{ tag }}" class="btn btn-success">
-                        &laquo; 1
-                    </a>
-                    <span>...</span>
-                    <a href="?page={{ articles.previous_page_number }}&order={{ order }}&search={{ search }}&column={{ column }}&tag={{ tag }}" 
-                       class="btn btn-secondary"
-                    >
-                        {{ articles.previous_page_number }}
-                    </a>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ articles.previous_page_number }}&order={{ order }}&search={{ search }}&column={{ column }}&tag={{ tag }}" aria-label="Previous">
+                            <span aria-hidden="true">&lt;</span>
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" aria-label="Previous">
+                            <span aria-hidden="true">&lt;</span>
+                        </a>
+                    </li>
                 {% endif %}
-
-                <!-- 当前页面 -->
-                <span class="current btn btn-danger btn-lg">
-                    {{ articles.number }}
-                </span>
-
-                <!-- 如果不是最末页，则显示下翻按钮 -->
+                
+                <!-- 页码显示逻辑 -->
+                {% if articles.paginator.num_pages > 1 %}
+                    <!-- 第一页始终显示 -->
+                    <li class="page-item {% if articles.number == 1 %}active{% endif %}">
+                        <a class="page-link" href="?page=1&order={{ order }}&search={{ search }}&column={{ column }}&tag={{ tag }}">1</a>
+                    </li>
+                    
+                    <!-- 省略号(如果当前页>=4) -->
+                    {% if articles.number >= 4 %}
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                    {% endif %}
+                    
+                    <!-- 当前页周围的页码 -->
+                    {% for i in articles.paginator.page_range %}
+                        {% if i > 1 and i < articles.paginator.num_pages %}
+                            {% if i >= articles.number|add:"-1" and i <= articles.number|add:"1" %}
+                                <li class="page-item {% if articles.number == i %}active{% endif %}">
+                                    <a class="page-link" href="?page={{ i }}&order={{ order }}&search={{ search }}&column={{ column }}&tag={{ tag }}">{{ i }}</a>
+                                </li>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                    
+                    <!-- 省略号(如果当前页<=最大页数-3) -->
+                    {% if articles.number <= articles.paginator.num_pages|add:"-3" %}
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                    {% endif %}
+                    
+                    <!-- 最后一页始终显示 -->
+                    {% if articles.paginator.num_pages > 1 %}
+                        <li class="page-item {% if articles.number == articles.paginator.num_pages %}active{% endif %}">
+                            <a class="page-link" href="?page={{ articles.paginator.num_pages }}&order={{ order }}&search={{ search }}&column={{ column }}&tag={{ tag }}">{{ articles.paginator.num_pages }}</a>
+                        </li>
+                    {% endif %}
+                {% endif %}
+                
+                <!-- 下一页按钮 -->
                 {% if articles.has_next %}
-                    <a href="?page={{ articles.next_page_number }}&order={{ order }}&search={{ search }}&column={{ column }}&tag={{ tag }}"
-                       class="btn btn-secondary"
-                    >
-                        {{ articles.next_page_number }}
-                    </a>
-                    <span>...</span>
-                    <a href="?page={{ articles.paginator.num_pages }}&order={{ order }}&search={{ search }}&column={{ column }}&tag={{ tag }}"
-                       class="btn btn-success"
-                    >
-                        {{ articles.paginator.num_pages }} &raquo;
-                    </a>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ articles.next_page_number }}&order={{ order }}&search={{ search }}&column={{ column }}&tag={{ tag }}" aria-label="Next">
+                            <span aria-hidden="true">&gt;</span>
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" aria-label="Next">
+                            <span aria-hidden="true">&gt;</span>
+                        </a>
+                    </li>
                 {% endif %}
-            </span>
+            </ul>
+            
+            <!-- 跳转到指定页 -->
+            <div class="ml-3 d-flex align-items-center">
+                <span class="mr-2">跳至</span>
+                <input type="number" min="1" max="{{ articles.paginator.num_pages }}" class="form-control" style="width: 60px;" id="pageJumpInput">
+                <span class="ml-2">页</span>
+                <button class="btn btn-sm btn-outline-secondary ml-2" id="pageJumpButton">确定</button>
+            </div>
         </div>
-    </div>
+    </nav>
 
+    <!-- 页面跳转脚本 -->
+    <script>
+        document.getElementById('pageJumpButton').addEventListener('click', function() {
+            const pageInput = document.getElementById('pageJumpInput');
+            const pageNum = parseInt(pageInput.value);
+            if (pageNum && pageNum >= 1 && pageNum <= {{ articles.paginator.num_pages }}) {
+                window.location.href = "?page=" + pageNum + "&order={{ order }}&search={{ search }}&column={{ column }}&tag={{ tag }}";
+            }
+        });
+        
+        document.getElementById('pageJumpInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('pageJumpButton').click();
+            }
+        });
+    </script>
 </div>
 
 <style>
@@ -188,6 +249,38 @@
         background-color: transparent;
         margin-bottom: 0;
     }
+    
+    /* 方形分页样式 */
+    .pagination .page-link {
+        border-radius: 0;
+        margin: 0 2px;
+        min-width: 40px;
+        height: 40px;
+        text-align: center;
+        line-height: 24px;
+        font-weight: 500;
+    }
+    
+    .pagination .page-item.active .page-link {
+        background-color: #fff;
+        color: #000;
+        border: 2px solid #000;
+        font-weight: bold;
+    }
+    
+    .pagination .page-link:hover {
+        background-color: #f8f9fa;
+        border-color: #dee2e6;
+        color: #000;
+    }
+    
+    .pagination .page-item.disabled .page-link {
+        color: #6c757d;
+        pointer-events: none;
+        background-color: #fff;
+        border-color: #dee2e6;
+    }
+    
     @media (max-width: 576px) { 
         .form-inline input[type="text"] {
             width: 100%;

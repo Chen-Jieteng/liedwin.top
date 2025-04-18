@@ -25,12 +25,12 @@ SECRET_KEY = '__=s9@oixaun$x^g7-4#10wf_*7zvb8)kl1$j82fj&cyq%^o^3'
 # SECURITY WARNING: don't run with debug turned on in production!
 
 # 部署到线上时为 False; 读者在本地调试时请修改为 True
-DEBUG = False
+DEBUG = True
 
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = False
 
-ALLOWED_HOSTS = ['.liedwin.top','47.101.11.42']
+ALLOWED_HOSTS = ['.liedwin.top','47.101.11.42', '127.0.0.1', 'localhost']
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
@@ -74,8 +74,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'allauth.account.middleware.AccountMiddleware',
-
 ]
 
 ROOT_URLCONF = 'my_blog.urls'

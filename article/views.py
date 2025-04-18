@@ -48,8 +48,8 @@ def article_list(request):
         # 按热度排序博文
         article_list = article_list.order_by('-total_views')
 
-    # 每页显示 1 篇文章
-    paginator = Paginator(article_list, 3)
+    # 每页显示 15 篇文章
+    paginator = Paginator(article_list, 15)
     # 获取 url 中的页码
     page = request.GET.get('page')
     # 将导航对象相应的页码内容返回给 articles
@@ -267,7 +267,13 @@ def article_list_example(request):
     简单的文章列表
     """
     if request.method == 'GET':
-        articles = ArticlePost.objects.all()
+        articles_list = ArticlePost.objects.all()
+        # 添加分页功能，每页15篇文章
+        paginator = Paginator(articles_list, 15)
+        # 获取 url 中的页码
+        page = request.GET.get('page')
+        # 将导航对象相应的页码内容返回给 articles
+        articles = paginator.get_page(page)
         context = {'articles': articles}
         return render(request, 'article/list.html', context)
 
@@ -293,6 +299,8 @@ class ArticleListView(ContextMixin, ListView):
     context_object_name = 'articles'
     # 模板
     template_name = 'article/list.html'
+    # 分页，每页15篇文章
+    paginate_by = 15
 
     def get_queryset(self):
         """

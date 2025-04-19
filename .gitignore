@@ -70,3 +70,4 @@ wheels/
 # 迁移文件 - 取消注释如果你不想追踪迁移
 # */migrations/*.py
 # !*/migrations/__init__.py
+db.sqlite3

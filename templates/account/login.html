@@ -6,70 +6,80 @@
 {% block title %}登录{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="row">
-        <div class="col-12">
-            <br>
-
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h4 class="mb-0 py-2"><i class="fas fa-sign-in-alt mr-2"></i>账号登录</h4>
+                </div>
+                <div class="card-body p-4">
+                    <form class="login" id="login_form" method="POST" action="{% url 'account_login' %}">
+                        {% csrf_token %}
+                        <!-- 账号输入 -->
+                        <div class="form-group">
+                            <label for="id_login"><i class="fas fa-user text-primary mr-2"></i>账号</label>
+                            <input type="text" name="login" 
+                                   placeholder="请输入用户名或Email" 
+                                   autofocus="autofocus" required
+                                   id="id_login" class="form-control shadow-sm" />
+                        </div>
+                        
+                        <!-- 密码输入 -->
+                        <div class="form-group mt-4">
+                            <label for="id_password"><i class="fas fa-lock text-primary mr-2"></i>密码</label>
+                            <input type="password" name="password" 
+                                   placeholder="请输入密码" 
+                                   required id="id_password"
+                                   class="form-control shadow-sm" />
+                        </div>
+                        
+                        <!-- 记住我选项 -->
+                        <div class="custom-control custom-checkbox mt-3">
+                            <input type="checkbox" name="remember" id="id_remember" checked class="custom-control-input" />
+                            <label for="id_remember" class="custom-control-label">
+                                保持登录
+                            </label>
+                        </div>
+                        
+                        <!-- 提交按钮 -->
+                        <div class="mt-4">
+                            <button class="primaryAction btn btn-primary btn-block shadow-sm" type="submit" id="submit_login">
+                                <i class="fas fa-sign-in-alt mr-2"></i>登录
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <!-- 其他选项 -->
+                    <div class="mt-4">
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'account_signup' %}" class="text-decoration-none">
+                                <i class="fas fa-user-plus mr-1"></i>注册新账号
+                            </a>
+                            <a class="text-decoration-none" href="{% url 'account_reset_password' %}">
+                                <i class="fas fa-key mr-1"></i>忘记密码
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
             {% get_providers as socialaccount_providers %}
-
             {% if socialaccount_providers %}
-            <p>
-                {% blocktrans with site.name as site_name %}请登录已有本地账号或<a href="{{ signup_url }}">注册</a>新账号。
-                也可以通过第三方登录:{% endblocktrans %}
-            </p>
-
-            <div class="socialaccount_ballot">
-                <h5 class="mb-2 mt-4">第三方登录：</h5>
-                <ul class="socialaccount_providers">
-                  {% include "socialaccount/snippets/provider_list.html" with process="login" %}
-                </ul>
-                <h5 class="mb-2 mt-4">本地登录：</h5>
+            <!-- 第三方登录选项 -->
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0 py-2"><i class="fas fa-share-alt mr-2"></i>第三方登录</h5>
+                </div>
+                <div class="card-body text-center py-4">
+                    <div class="row">
+                        {% include "socialaccount/snippets/provider_list.html" with process="login" %}
+                    </div>
+                    {% include "socialaccount/snippets/login_extra.html" %}
+                </div>
             </div>
-
-            {% include "socialaccount/snippets/login_extra.html" %}
-
-            {% else %}
-            <p>{% blocktrans %}If you have not created an account yet, then please
-            <a href="{{ signup_url }}">sign up</a> first.{% endblocktrans %}</p>
             {% endif %}
-            <div class="col-6">
-                <form class="login" id="login_form" method="POST" action="{% url 'account_login' %}">
-                    {% csrf_token %}
-                    <div class="form-group">
-                        <label for="id_login">账号: </label>
-                        <input type="text" name="login" placeholder="请输入用户名或Email" autofocus="autofocus" required
-                            id="id_login" class="form-control" />
-                        <small class="form-text text-muted ml-1">
-                            还没有账号？
-                            <a href="{% url 'account_signup' %}" style="color: cornflowerblue; ">
-                                注册新账号
-                            </a>
-                        </small>
-                    </div>
-                    <div class="form-group mb-1">
-                        <label for="id_password">
-                            密码:
-                        </label>
-                        <input type="password" name="password" placeholder="请输入密码" required id="id_password"
-                            class="form-control" />
-                        <small class="form-text text-muted ml-1">
-                            <a class="secondaryAction layui-text" href="{% url 'account_reset_password' %}">
-                                忘记密码?
-                            </a>
-                        </small>
-                    </div>
-                    <div class="custom-control custom-checkbox mb-2">
-                        <input type="checkbox" name="remember" id="id_remember" checked class="custom-control-input" />
-                        <label for="id_remember" class="custom-control-label">
-                            保持登录
-                        </label>
-                    </div>
-                    <button class="primaryAction btn btn-primary" type="submit" id="submit_login">确认</button>
-                </form>
-            </div>
         </div>
     </div>
 </div>
-
 {% endblock %}

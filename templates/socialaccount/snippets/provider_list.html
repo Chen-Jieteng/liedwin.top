@@ -1,0 +1,25 @@
+{% load socialaccount %}
+
+{% get_providers as socialaccount_providers %}
+
+{% for provider in socialaccount_providers %}
+  {% if provider.id == "github" %}
+  <div class="col-6 mb-2">
+    <a title="用GitHub登录" 
+       class="btn btn-outline-dark btn-block" 
+       href="{% provider_login_url provider.id process=process scope=scope auth_params=auth_params %}">
+      <i class="fab fa-github mr-2"></i>GitHub
+    </a>
+  </div>
+  {% endif %}
+  
+  {% if provider.id == "weibo" %}
+  <div class="col-6 mb-2">
+    <a title="用微博登录" 
+       class="btn btn-outline-danger btn-block" 
+       href="{% provider_login_url provider.id process=process scope=scope auth_params=auth_params %}">
+      <i class="fab fa-weibo mr-2"></i>微博
+    </a>
+  </div>
+  {% endif %}
+{% endfor %} 

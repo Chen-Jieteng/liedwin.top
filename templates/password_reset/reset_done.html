@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}密码修改成功{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h4 class="mb-0 py-2"><i class="fas fa-check-circle mr-2 text-success"></i>密码修改成功</h4>
+                </div>
+                <div class="card-body p-4 text-center">
+                    <div class="my-4">
+                        <div class="mb-4">
+                            <i class="fas fa-shield-alt text-success fa-4x"></i>
+                        </div>
+                        <h5 class="mb-3">您的密码已成功重置</h5>
+                        <p class="text-muted">
+                            您的账号安全已经得到保障，现在可以使用新密码登录您的账号。
+                        </p>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <a href="{% url 'userprofile:login' %}" class="btn btn-primary shadow-sm">
+                            <i class="fas fa-sign-in-alt mr-2"></i>立即登录
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

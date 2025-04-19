@@ -1,31 +1,81 @@
 {% extends "base.html" %} {% load static %}
 {% block title %} 登录 {% endblock title %}
 {% block content %}
-<div class="container">
-    <div class="row">
-        <div class="col-12">
-            <br>
-            <h5>还没有账号？</h5>
-            <h5>点击<a href='{% url "userprofile:register" %}'>注册账号</a>加入我们吧！</h5>
-            <br>
-            <form method="post" action=".">
-                {% csrf_token %}
-                <!-- 账号 -->
-                <div class="form-group col-md-4">
-                    <label for="username">账号</label>
-                    <input type="text" class="form-control" id="username" name="username">
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h4 class="mb-0 py-2"><i class="fas fa-sign-in-alt mr-2"></i>账号登录</h4>
                 </div>
-                <!-- 密码 -->
-                <div class="form-group col-md-4">
-                    <label for="password">密码</label>
-                    <input type="password" class="form-control" id="password" name="password">
+                <div class="card-body p-4">
+                    <form method="post" action=".">
+                        {% csrf_token %}
+                        
+                        <!-- 账号输入 -->
+                        <div class="form-group">
+                            <label for="username"><i class="fas fa-user text-primary mr-2"></i>用户名</label>
+                            <input type="text" class="form-control shadow-sm" 
+                                   id="username" name="username" 
+                                   placeholder="请输入您的用户名" required>
+                        </div>
+                        
+                        <!-- 密码输入 -->
+                        <div class="form-group mt-4">
+                            <label for="password"><i class="fas fa-lock text-primary mr-2"></i>密码</label>
+                            <input type="password" class="form-control shadow-sm" 
+                                   id="password" name="password" 
+                                   placeholder="请输入您的密码" required>
+                        </div>
+                        
+                        <!-- 记住我选项 -->
+                        <div class="custom-control custom-checkbox mt-3">
+                            <input type="checkbox" class="custom-control-input" id="remember" name="remember">
+                            <label class="custom-control-label" for="remember">记住我</label>
+                        </div>
+                        
+                        <!-- 提交按钮 -->
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary btn-block shadow-sm">
+                                <i class="fas fa-sign-in-alt mr-2"></i>登录
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <!-- 其他选项 -->
+                    <div class="mt-4">
+                        <div class="d-flex justify-content-between">
+                            <a href='{% url "userprofile:register" %}' class="text-decoration-none">
+                                <i class="fas fa-user-plus mr-1"></i>注册新账号
+                            </a>
+                            <a href='{% url "password_reset_recover" %}' class="text-decoration-none">
+                                <i class="fas fa-key mr-1"></i>忘记密码
+                            </a>
+                        </div>
+                    </div>
                 </div>
-                <!-- 提交按钮 -->
-                <button type="submit" class="btn btn-primary">提交</button>
-            </form>
-            <br>
-            <h5>忘记密码了？</h5>
-            <h5>点击<a href='{% url "password_reset_recover" %}'>这里</a>重置密码</h5>
+            </div>
+            
+            <!-- 第三方登录选项 -->
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0 py-2"><i class="fas fa-share-alt mr-2"></i>第三方登录</h5>
+                </div>
+                <div class="card-body text-center py-4">
+                    <div class="row">
+                        <div class="col-6">
+                            <a href="#" class="btn btn-outline-dark btn-block">
+                                <i class="fab fa-github mr-2"></i>GitHub
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a href="#" class="btn btn-outline-danger btn-block">
+                                <i class="fab fa-weibo mr-2"></i>微博
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>

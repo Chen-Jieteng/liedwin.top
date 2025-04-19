@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load bootstrap4 %}
+
+{% block title %}设置新密码{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h4 class="mb-0 py-2"><i class="fas fa-lock mr-2"></i>设置新密码</h4>
+                </div>
+                <div class="card-body p-4">
+                    <div class="mb-4">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            请输入您的新密码，确保密码强度足够安全。
+                        </div>
+                    </div>
+                    
+                    <form method="post" action="." class="form">
+                        {% csrf_token %}
+                        
+                        <!-- 新密码输入 -->
+                        <div class="form-group">
+                            <label for="id_password1"><i class="fas fa-lock text-primary mr-2"></i>新密码</label>
+                            <input type="password" name="password1" 
+                                   id="id_password1" 
+                                   class="form-control shadow-sm" 
+                                   placeholder="请输入新密码" 
+                                   required>
+                            <small class="form-text text-muted">
+                                密码至少包含8个字符，建议使用字母、数字和特殊符号的组合。
+                            </small>
+                        </div>
+                        
+                        <!-- 确认密码输入 -->
+                        <div class="form-group mt-3">
+                            <label for="id_password2"><i class="fas fa-lock text-primary mr-2"></i>确认密码</label>
+                            <input type="password" name="password2" 
+                                   id="id_password2" 
+                                   class="form-control shadow-sm" 
+                                   placeholder="请再次输入新密码" 
+                                   required>
+                        </div>
+                        
+                        <!-- 提交按钮 -->
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary btn-block shadow-sm">
+                                <i class="fas fa-check-circle mr-2"></i>确认修改
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

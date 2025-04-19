@@ -3,15 +3,15 @@ from django.contrib.auth.models import User
 from django.http import HttpResponse
 from .models import ArticlePost, ArticleColumn
 from .forms import ArticlePostForm
-import markdown
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-from django.db.models import Q
+from django.db.models import Q, Count
 from comment.models import Comment
 from comment.forms import CommentForm
 from django.views import View
 from django.views.generic import ListView, DetailView
 from django.views.generic.edit import CreateView
+from taggit.models import Tag
 
 
 # 文章列表
@@ -36,8 +36,15 @@ def article_list(request):
         search = ''
 
     # 栏目查询集
+    column_name = ''
     if column is not None and column.isdigit():
         article_list = article_list.filter(column=column)
+        # 获取栏目名称，用于显示当前筛选条件
+        try:
+            column_obj = ArticleColumn.objects.get(id=column)
+            column_name = column_obj.title
+        except ArticleColumn.DoesNotExist:
+            pass
 
     # 标签查询集
     if tag and tag != 'None':
@@ -47,6 +54,21 @@ def article_list(request):
     if order == 'total_views':
         # 按热度排序博文
         article_list = article_list.order_by('-total_views')
+    elif order == 'comments':
+        # 按评论数排序
+        article_list = article_list.annotate(comment_count=Count('comments')).order_by('-comment_count')
+    elif order == 'likes':
+        # 按点赞数排序
+        article_list = article_list.order_by('-likes')
+    else:
+        # 默认按照创建时间排序
+        article_list = article_list.order_by('-created')
+
+    # 获取所有栏目
+    all_columns = ArticleColumn.objects.annotate(article_count=Count('article'))
+    
+    # 获取热门标签（最多使用的10个标签）
+    hot_tags = Tag.objects.annotate(num_times=Count('taggit_taggeditem_items')).filter(num_times__gt=0).order_by('-num_times')[:10]
 
     # 每页显示 15 篇文章
     paginator = Paginator(article_list, 15)
@@ -60,7 +82,10 @@ def article_list(request):
         'order': order,
         'search': search,
         'column': column,
+        'column_name': column_name,
         'tag': tag,
+        'all_columns': all_columns,
+        'hot_tags': hot_tags,
     }
     # render函数：载入模板，并返回context对象
     return render(request, 'article/list.html', context)
@@ -93,19 +118,8 @@ def article_detail(request, id):
     else:
         next_article = None
 
-
-    # Markdown 语法渲染
-    md = markdown.Markdown(
-        extensions=[
-        # 包含 缩写、表格等常用扩展
-        'markdown.extensions.extra',
-        # 语法高亮扩展
-        'markdown.extensions.codehilite',
-        # 目录扩展
-        'markdown.extensions.toc',
-        ]
-    )
-    article.body = md.convert(article.body)
+    # CKEditor内容不需要处理，目录将由JavaScript生成
+    toc = ""
 
     # 为评论引入表单
     comment_form = CommentForm()
@@ -113,7 +127,7 @@ def article_detail(request, id):
     # 需要传递给模板的对象
     context = { 
         'article': article,
-        'toc': md.toc,
+        'toc': toc,
         'comments': comments,
         'pre_article': pre_article,
         'next_article': next_article,
@@ -139,6 +153,10 @@ def article_create(request):
             if request.POST['column'] != 'none':
                 # 保存文章栏目
                 new_article.column = ArticleColumn.objects.get(id=request.POST['column'])
+            
+            # 设置编辑器类型为CKEditor
+            new_article.editor_type = 'ckeditor'
+            
             # 将新文章保存到数据库中
             new_article.save()
             # 保存 tags 的多对多关系
@@ -155,7 +173,7 @@ def article_create(request):
         # 文章栏目
         columns = ArticleColumn.objects.all()
         # 赋值上下文
-        context = { 'article_post_form': article_post_form, 'columns': columns }
+        context = { 'form': article_post_form, 'columns': columns }
         # 返回模板
         return render(request, 'article/create.html', context)
 
@@ -207,26 +225,36 @@ def article_update(request, id):
     # 判断用户是否为 POST 提交表单数据
     if request.method == "POST":
         # 将提交的数据赋值到表单实例中
-        article_post_form = ArticlePostForm(data=request.POST, instance=article)
+        article_post_form = ArticlePostForm(data=request.POST, files=request.FILES, instance=article)
         # 判断提交的数据是否满足模型的要求
         if article_post_form.is_valid():
-            # 保存新写入的 title、body 数据并保存
-            article.title = request.POST['title']
-            article.body = request.POST['body']
-
+            # 保存文章
+            article = article_post_form.save(commit=False)
+            
             if request.POST['column'] != 'none':
                 # 保存文章栏目
                 article.column = ArticleColumn.objects.get(id=request.POST['column'])
             else:
                 article.column = None
 
-            if request.FILES.get('avatar'):
-                article.avatar = request.FILES.get('avatar')
-
-            article.tags.set(*request.POST.get('tags').split(','), clear=True)
-
-            article.editor_type = request.POST['editor_type']
+            # 设置编辑器类型为CKEditor
+            article.editor_type = 'ckeditor'
+                
+            # 检查是否要移除封面图片
+            if 'remove_avatar' in request.POST and request.POST['remove_avatar'] == 'true':
+                article.avatar = None
+                
+            # 保存文章
             article.save()
+            
+            # 保存标签
+            if 'tags' in request.POST and request.POST['tags']:
+                # 拆分标签并移除空白
+                tags = [tag.strip() for tag in request.POST['tags'].split(',') if tag.strip()]
+                article.tags.clear()  # 先清除已有标签
+                for tag in tags:
+                    article.tags.add(tag)  # 逐个添加新标签
+                
             # 完成后返回到修改后的文章中。需传入文章的 id 值
             return redirect("article:article_detail", id=id)
         # 如果数据不合法，返回错误信息
@@ -236,14 +264,14 @@ def article_update(request, id):
     # 如果用户 GET 请求获取数据
     else:
         # 创建表单类实例
-        article_post_form = ArticlePostForm()
+        article_post_form = ArticlePostForm(instance=article)
 
         # 文章栏目
         columns = ArticleColumn.objects.all()
         # 赋值上下文，将 article 文章对象也传递进去，以便提取旧的内容
         context = { 
             'article': article, 
-            'article_post_form': article_post_form,
+            'form': article_post_form,
             'columns': columns,
             'tags': ','.join([x for x in article.tags.names()]),
         }

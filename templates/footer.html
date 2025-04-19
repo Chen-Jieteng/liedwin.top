@@ -1,43 +1,290 @@
 {% load static %}
 <!-- Footer -->
-<footer class="bg-light">
-    <div class="container-fluid">
-        <div class="row py-2">
-            <div class="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
-                <p>芥尘的数据仓库</p>
-                <p>本站提醒您：树立网安意识，莫念无名之利；网络服务各行各业，安全保障改革发展；网络社会法治社会，网络空间网警保卫；打造健康网络环境，保障网民上网无忧。</p>
-                <div>
-                    <a class="m-0 text-center"
-                       href="https://beian.mps.gov.cn/#/query/webSearch?code=44078102440979"
-                       target="_blank" data-v-644aa589="">
-                       <img src="https://beian.mps.gov.cn/img/logo01.dd7ff50e.png" alt="备案图标" style="display:inline-block; vertical-align: middle; width: 30px; height: 32px; margin-right: 1px;">
-                       <small>粤公网安备44078102440979号</small>
-                    </a>
-                    <a class="m-0" href="https://beian.miit.gov.cn/#/Integrated/index"
-                       target="_blank" data-v-644aa589="" style="margin-left: 20px;"><small>粤ICP备2024222534号</small></a>
+<footer class="footer-section">
+    <div class="footer-top py-5">
+        <div class="container">
+            <div class="row">
+                <!-- 网站信息 -->
+                <div class="col-lg-4 col-md-6 mb-4 mb-lg-0">
+                    <div class="footer-logo mb-3">
+                        <h4>芥尘的数据仓库</h4>
+                    </div>
+                    <p class="text-muted">分享技术，记录生活，探索未知的数字世界。</p>
+                    <p class="text-muted small">本站提醒您：树立网安意识，莫念无名之利；网络服务各行各业，安全保障改革发展；网络社会法治社会，网络空间网警保卫；打造健康网络环境，保障网民上网无忧。</p>
+                    <div class="social-links mt-3">
+                        <a href="#" class="social-link" title="微信"><i class="fab fa-weixin"></i></a>
+                        <!-- <a href="https://www.nowcoder.com/users/211925195" target="_blank" class="social-link" title="牛客网"><i class="fas fa-code"></i></a> -->
+                        <a href="https://github.com/Chen-Jieteng" target="_blank" class="social-link" title="GitHub"><i class="fab fa-github"></i></a>
+                        <!-- <a href="#" class="social-link" title="LeetCode"><i class="fas fa-code-branch"></i></a> -->
+                        <a href="https://www.kaggle.com/chenedwin" target="_blank" class="social-link" title="Kaggle">
+                            <img src="{% static 'images/icons/kaggle-k.svg' %}" alt="Kaggle" class="social-icon-img">
+                        </a>
+                        <a href="https://huggingface.co/EdwinC" target="_blank" class="social-link" title="HuggingFace">
+                            <img src="{% static 'images/icons/huggingface.svg' %}" alt="HuggingFace" class="social-icon-img">
+                        </a>
+                        <a href="#" class="social-link" title="领英"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+                
+                <!-- 快速链接 -->
+                <div class="col-lg-2 col-md-6 mb-4 mb-lg-0">
+                    <h5 class="footer-heading">关于我</h5>
+                    <ul class="footer-links">
+                        <li><a href="https://1150964115.wixsite.com/website/experiences">个人CV</a></li>
+                        <li><a href="https://1150964115.wixsite.com/website/skills">个人爱好</a></li>
+                        <li><a href="https://1150964115.wixsite.com/website/skills">个人生活</a></li>
+                    </ul>
+                </div>
+                
+                <!-- 学习资源 -->
+                <div class="col-lg-2 col-md-6 mb-4 mb-lg-0">
+                    <h5 class="footer-heading">学习资源</h5>
+                    <ul class="footer-links">
+                        <li><a href="https://www.bilibili.com/">推荐教程</a></li>
+                        <li><a href="https://www.baidu.com">推荐书籍</a></li>
+                        <li><a href="{% url 'article:article_list' %}?tag=教程">技术教程</a></li>
+                    </ul>
+                </div>
+                
+                <!-- 政策说明 -->
+                <div class="col-lg-2 col-md-6 mb-4 mb-lg-0">
+                    <h5 class="footer-heading">政策说明</h5>
+                    <ul class="footer-links">
+                        <li><a href="https://www.mca.gov.cn/article/app/yhxyhyszc/index.html">用户隐私政策</a></li>
+                        <li><a href="https://www.12377.cn/">中央网信办</a></li>
+                        <li><a href="#">服务条款</a></li>
+                    </ul>
+                </div>
+                
+                <!-- 联系方式 -->
+                <div class="col-lg-2 col-md-6">
+                    <h5 class="footer-heading">联系我</h5>
+                    <ul class="footer-links">
+                        <li><i class="fas fa-envelope mr-2"></i>1150964115@qq.com</li>
+                        <li><i class="fas fa-map-marker-alt mr-2"></i>中国·广东</li>
+                    </ul>
                 </div>
             </div>
-            <div class="col-12 col-sm-6 col-md-4 col-lg-2 col-xl-2">
-                <h5>关于我</h5>
-                <a href="https://1150964115.wixsite.com/website/experiences"><small>个人CV</small></a><br>
-                <a href="https://1150964115.wixsite.com/website/skills"><small>个人爱好</small></a><br>
-                <a href="https://1150964115.wixsite.com/website/skills"><small>个人生活</small></a><br>
-            </div>
-            <div class="col-12 col-sm-6 col-md-4 col-lg-2 col-xl-2">
-                <h5>学习资源</h5>
-                <a href="https://www.bilibili.com/"><small>推荐教程</small></a><br>
-                <a href="www.baidu.com"><small>推荐书籍</small></a><br>
-            </div>
-            <div class="col-12 col-sm-6 col-md-4 col-lg-2 col-xl-2">
-                <h5>政策说明</h5>
-                <a href="https://www.mca.gov.cn/article/app/yhxyhyszc/index.html"><small>用户隐私政策</small></a><br>
-                <a href="https://www.12377.cn/"><small>中央网信办</small></a><br>
-            </div>
         </div>
-        <div class="row py-1 text-center">
-            <div class="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
-                <p><small>© 2025 版权所有：芥尘的数据仓库</small></p>
+    </div>
+    
+    <!-- 分割线 -->
+    <div class="footer-divider"></div>
+    
+    <!-- 备案信息 -->
+    <div class="footer-bottom py-3">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6 text-center text-md-left mb-3 mb-md-0">
+                    <p class="copyright mb-0">© 2024-2025 芥尘的数据仓库. 保留所有权利</p>
+                </div>
+                <div class="col-md-6 text-center text-md-right">
+                    <div class="beian-links">
+                        <a href="https://beian.mps.gov.cn/#/query/webSearch?code=44078102440979" target="_blank" class="beian-link">
+                            <img src="https://beian.mps.gov.cn/img/logo01.dd7ff50e.png" alt="备案图标" class="beian-icon">
+                            <span>粤公网安备44078102440979号</span>
+                        </a>
+                        <a href="https://beian.miit.gov.cn/#/Integrated/index" target="_blank" class="beian-link ml-3">
+                            <span>粤ICP备2024222534号</span>
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </footer>
+
+<style>
+    /* 页脚样式 */
+    .footer-section {
+        background-color: #f8f9fa;
+        color: #6c757d;
+        position: relative;
+    }
+    
+    .footer-top {
+        position: relative;
+    }
+    
+    .footer-logo {
+        font-weight: 700;
+        color: #343a40;
+    }
+    
+    .footer-heading {
+        color: #343a40;
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 1.2rem;
+        position: relative;
+    }
+    
+    .footer-heading:after {
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: -8px;
+        width: 30px;
+        height: 2px;
+        background-color: #007bff;
+    }
+    
+    .footer-links {
+        list-style: none;
+        padding-left: 0;
+    }
+    
+    .footer-links li {
+        margin-bottom: 0.5rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    .footer-links a {
+        color: #6c757d;
+        transition: color 0.3s ease, transform 0.3s ease;
+        display: inline-block;
+        text-decoration: none;
+    }
+    
+    .footer-links a:hover {
+        color: #007bff;
+        transform: translateX(3px);
+    }
+    
+    .social-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 1rem;
+    }
+    
+    .social-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background-color: #e9ecef;
+        color: #495057;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+    
+    .social-link:hover {
+        background-color: #007bff;
+        color: white;
+        transform: translateY(-3px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .footer-divider {
+        height: 1px;
+        background: linear-gradient(to right, transparent, rgba(0,0,0,0.1), transparent);
+        margin: 0 auto;
+        width: 90%;
+    }
+    
+    .footer-bottom {
+        background-color: #f1f3f5;
+    }
+    
+    .copyright {
+        color: #6c757d;
+        font-size: 0.875rem;
+    }
+    
+    .beian-links {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+    
+    .beian-link {
+        display: inline-flex;
+        align-items: center;
+        color: #6c757d;
+        font-size: 0.75rem;
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+    
+    .beian-link:hover {
+        color: #007bff;
+        text-decoration: none;
+    }
+    
+    .beian-icon {
+        width: 14px;
+        height: 14px;
+        margin-right: 5px;
+    }
+    
+    @media (max-width: 767px) {
+        .beian-links {
+            justify-content: center;
+        }
+        
+        .footer-heading {
+            margin-top: 1.5rem;
+        }
+        
+        .social-links {
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+    }
+    
+    /* 适配暗色模式 */
+    @media (prefers-color-scheme: dark) {
+        .footer-section {
+            background-color: #343a40;
+            color: #adb5bd;
+        }
+        
+        .footer-heading {
+            color: #f8f9fa;
+        }
+        
+        .footer-logo {
+            color: #f8f9fa;
+        }
+        
+        .footer-links a {
+            color: #adb5bd;
+        }
+        
+        .footer-links a:hover {
+            color: #007bff;
+        }
+        
+        .social-link {
+            background-color: #495057;
+            color: #f8f9fa;
+        }
+        
+        .footer-bottom {
+            background-color: #212529;
+        }
+        
+        .copyright, .beian-link {
+            color: #adb5bd;
+        }
+    }
+    
+    /* 添加通用社交图标图片样式 */
+    .social-icon-img {
+        width: 24px;
+        height: 24px;
+        filter: invert(0.5);
+        transition: filter 0.3s ease;
+    }
+    
+    .social-link:hover .social-icon-img {
+        filter: invert(1);
+    }
+</style>

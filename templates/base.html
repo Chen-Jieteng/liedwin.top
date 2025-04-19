@@ -17,15 +17,22 @@
     
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.14.0/css/all.min.css">
     
+        <!-- 引入自定义CSS -->
+        <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+    
         <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.0/es5/tex-mml-chtml.js"></script>
         
+        <!-- 允许子模板扩展head区域 -->
+        {% block head_extend %}{% endblock head_extend %}
     </head>    
     <body>    
         <!-- 引入导航栏 -->
         {% include 'header.html' %}
         <!-- 预留具体页面的位置 -->
         <div id="wrapper">
-            {% block content %}{% endblock content %}
+            <div id="content">
+                {% block content %}{% endblock content %}
+            </div>
             <div id="push"></div>
         </div>
         <!-- 引入注脚 -->
@@ -47,6 +54,43 @@
         
         {% include 'back_to_top_func.html' %}
         
+        <!-- 确保所有头像图片都正确填充圆形容器 -->
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // 处理所有头像图片
+                function fixAvatarImages() {
+                    // 选择所有头像相关容器内的图片
+                    const avatarImages = document.querySelectorAll('.author-avatar img, .rounded-circle img, [class*="avatar"] img, .user-avatar img');
+                    
+                    avatarImages.forEach(function(img) {
+                        // 设置图片填充样式
+                        img.style.width = '100%';
+                        img.style.height = '100%';
+                        img.style.objectFit = 'cover';
+                        img.style.margin = '0';
+                        img.style.padding = '0';
+                        
+                        // 确保父容器设置正确
+                        let parent = img.parentElement;
+                        if(parent.classList.contains('author-avatar') || 
+                           parent.classList.contains('rounded-circle') || 
+                           parent.classList.contains('user-avatar') || 
+                           parent.className.includes('avatar')) {
+                            parent.style.overflow = 'hidden';
+                            parent.style.borderRadius = '50%';
+                            parent.style.backgroundColor = '#ffffff';
+                        }
+                    });
+                }
+                
+                // 初始运行
+                fixAvatarImages();
+                
+                // 当页面上有动态加载内容时，也可以在适当时机再次运行
+                // 例如，如果使用了AJAX加载评论，可以在评论加载完成后调用
+                document.addEventListener('load', fixAvatarImages, true);
+            });
+        </script>
         
         <style>
             html, body {
@@ -56,12 +100,17 @@
         
             #wrapper {
                 min-height: 100%;
-                margin-bottom: -40px;
+                margin-bottom: -auto; /* 自动调整底部边距，不再固定为一个具体值 */
+                display: flex;
+                flex-direction: column;
+            }
+            
+            #content {
+                flex: 1 0 auto; /* 让内容区域自动填充可用空间 */
             }
         
-            #footer,
             #push {
-                height: 60px;
+                flex-shrink: 0; /* 防止push元素被压缩 */
             }
         
             .container {

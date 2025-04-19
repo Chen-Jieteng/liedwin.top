@@ -4,10 +4,14 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
+from django.views.decorators.csrf import csrf_exempt
+from ckeditor_uploader.views import upload, browse
 
+# 重新启用notifications
 import notifications.urls
 
 from article.views import article_list
+from userprofile.views import user_stats_api
 
 
 # 存放了映射关系的列表
@@ -29,11 +33,18 @@ urlpatterns = [
     path('userprofile/', include('userprofile.urls', namespace='userprofile')),
     # 评论
     path('comment/', include('comment.urls', namespace='comment')),
-    # djang-notifications
+    # 重新启用notifications
     path('inbox/notifications/', include(notifications.urls, namespace='notifications')),
     # notice
     path('notice/', include('notice.urls', namespace='notice')),
     # django-allauth
     path('accounts/', include('allauth.urls')),
+    
+    # CKEditor自定义上传URL (带CSRF豁免)
+    path('ckeditor/upload/', csrf_exempt(upload), name='ckeditor_upload'),
+    path('ckeditor/browse/', csrf_exempt(browse), name='ckeditor_browse'),
+    
+    # API端点
+    path('api/user/<int:id>/stats/', user_stats_api, name='user_stats_api'),
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

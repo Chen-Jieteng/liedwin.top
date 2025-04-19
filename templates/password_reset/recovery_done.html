@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}密码重置完成{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h4 class="mb-0 py-2"><i class="fas fa-check-circle mr-2 text-success"></i>重置成功</h4>
+                </div>
+                <div class="card-body p-4 text-center">
+                    <div class="my-4">
+                        <div class="mb-4">
+                            <i class="fas fa-envelope-open-text text-success fa-4x"></i>
+                        </div>
+                        <h5 class="mb-3">邮件已发送</h5>
+                        <p class="text-muted">
+                            我们已向您的邮箱发送了密码重置链接，请查收并点击链接完成重置。
+                        </p>
+                        <p class="text-muted">
+                            如果您未收到邮件，请检查垃圾邮件文件夹或确认所输入的邮箱地址是否正确。
+                        </p>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <a href="{% url 'userprofile:login' %}" class="btn btn-primary shadow-sm">
+                            <i class="fas fa-sign-in-alt mr-2"></i>返回登录
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

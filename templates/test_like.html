@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>测试点赞功能</title>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css">
+    </head>    
+    <body>    
+        <div class="container py-4">
+            <h1 class="mb-4">测试点赞功能</h1>
+            
+            <!-- 点赞按钮 -->
+            <div class="text-center my-4">
+                <button class="btn btn-outline-danger btn-lg px-4" type="button" 
+                    onclick="validateLike('/test-like-url/', 1, 10)"
+                >
+                    <i class="far fa-heart mr-1"></i>
+                    <span id="likes_number">10</span> 喜欢
+                </button>
+            </div>
+        </div>
+
+        <!-- JavaScript库 -->
+        <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/layer@3.5.1/dist/layer.min.js"></script>
+        
+        <script>
+            // 点赞功能主函数
+            function validateLike(url, id, likes) {
+                // 取出 LocalStorage 中的数据
+                let storage = window.localStorage;
+                const storage_str_data = storage.getItem("test_like_data");
+                let storage_json_data = JSON.parse(storage_str_data);
+                
+                // 若数据不存在，则创建空对象
+                if (!storage_json_data) {
+                    storage_json_data = {};
+                }
+                
+                // 检查当前文章是否已点赞
+                const status = checkStatus(storage_json_data, id);
+                if (status) {
+                    alert('已经点过赞了哟~');
+                    return;
+                } else {
+                    // 更新点赞数量并改变颜色
+                    $('#likes_number').text(likes + 1).css('color', '#dc3545');
+                    
+                    // 模拟AJAX请求成功
+                    setTimeout(function() {
+                        try {
+                            storage_json_data[id] = true;
+                            const d = JSON.stringify(storage_json_data);
+                            storage.setItem("test_like_data", d);
+                            alert('点赞成功!');
+                        } catch (e) {
+                            console.error(e);
+                            window.localStorage.clear();
+                        }
+                    }, 500);
+                }
+            }
+            
+            // 检查点赞状态
+            function checkStatus(data, id) {
+                try {
+                    if (id in data && data[id]) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                } catch (e) {
+                    window.localStorage.clear();
+                    return false;
+                }
+            }
+        </script>
+    </body>
+</html> 

@@ -58,12 +58,12 @@ INSTALLED_APPS = [
     'taggit',
     'ckeditor',
     'mptt',
-    'notifications',
+    'notifications',  # 重新启用notifications
 
     'article',
     'userprofile',
     'comment',
-    'notice',
+    'notice',  # 重新启用notice应用
 ]
 
 MIDDLEWARE = [
@@ -74,7 +74,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'allauth.account.middleware.AccountMiddleware',
 ]
 
 ROOT_URLCONF = 'my_blog.urls'
@@ -108,6 +107,13 @@ DATABASES = {
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
+
+# 会话设置 - 修复版本降级后的 padding 错误
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'  # 使用数据库存储会话
+SESSION_COOKIE_AGE = 1209600  # 两周(秒)
+
+# 强制浏览器清除会话 Cookie
+SESSION_COOKIE_NAME = 'sessionid_new'  # 修改会话 cookie 名称以强制客户端生成新的会话 Cookie
 
 
 # Password validation
@@ -193,13 +199,39 @@ CKEDITOR_CONFIGS = {
             ['Link', 'Unlink'],
             # 列表
             ['NumberedList', 'BulletedList'],
+            # 图片
+            ['Image', 'Table'],
+            # 标题
+            ['Format'], 
             # 最大化
             ['Maximize']
         ],
         # 插件
-        'extraPlugins': ','.join(['codesnippet', 'prism', 'widget', 'lineutils']),
+        'extraPlugins': ','.join(['codesnippet', 'prism', 'widget', 'lineutils', 'image2', 'uploadimage', 'clipboard', 'dialogadvtab']),
+        # 上传图片配置
+        'filebrowserUploadUrl': '/ckeditor/upload/',
+        'filebrowserBrowseUrl': '/ckeditor/browse/',
+        # 粘贴图片设置
+        'uploadUrl': '/ckeditor/upload/',
+        'pasteUploadFileApi': '/ckeditor/upload/',
+        # 图片上传设置
+        'image_previewText': ' ',
+        'allowedContent': True,
+        'removeFormatAttributes': '',
+        # 设置格式选项
+        'format_tags': 'p;h1;h2;h3;h4;h5;h6;pre',
     }
 }
+
+# CKEditor上传路径设置
+CKEDITOR_UPLOAD_PATH = 'uploads/'
+CKEDITOR_IMAGE_BACKEND = 'pillow'
+CKEDITOR_JQUERY_URL = 'https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js'
+CKEDITOR_BROWSE_SHOW_DIRS = True
+CKEDITOR_RESTRICT_BY_USER = True
+CKEDITOR_ALLOW_NONIMAGE_FILES = False  # 只允许上传图片
+CKEDITOR_FORCE_JPEG_COMPRESSION = True # 强制JPEG压缩
+CKEDITOR_UPLOAD_SLUGIFY_FILENAME = True # 规范化文件名
 
 AUTHENTICATION_BACKENDS = (
     # 此项使 Django 后台可独立于 allauth 登录

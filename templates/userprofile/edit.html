@@ -1,42 +1,481 @@
 {% extends "base.html" %} {% load static %}
-{% block title %} 用户信息 {% endblock title %}
-{% block content %}
-<div class="container">
-    <div class="row">
-        <div class="col-12">
-            <br>
-            <div class="col-md-4">用户名: {{ user.username }}</div>
-            <br>
-            {% if profile.avatar %}
-                <div class="col-md-4">头像</div>
-                <img src="{{ profile.avatar.url }}" style="max-width: 20%; border-radius: 15%;" class="col-md-4">
-            {% else %}
-                <h5 class="col-md-4">暂无头像</h5>
-            {% endif %}
-            <br>
-            <form method="post" action="." enctype="multipart/form-data">
-                {% csrf_token %}
-                <!-- avatar -->
-                <div class="form-group col-md-4">
-                    <label for="avatar">上传头像</label>
-                    <input type="file" class="form-control-file" name="avatar" id="avatar">
-                </div>
+{% block title %} 个人资料 {% endblock title %}
 
-                <!-- phone -->
-                <div class="form-group col-md-4">
-                    <label for="phone">电话</label>
-                    <input type="text" class="form-control" id="phone" name="phone" value="{{ profile.phone }}">
+{% block head_extend %}
+<!-- 引入Cropper.js相关资源 -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+<style>
+/* 头像裁剪相关样式 */
+.cropper-container {
+    max-height: 500px;
+}
+.crop-preview {
+    width: 160px;
+    height: 160px;
+    overflow: hidden;
+    border-radius: 50%;
+    border: 2px solid #f8f9fa;
+    box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,.075);
+}
+.cropper-view-box,
+.cropper-face {
+    border-radius: 50%;
+}
+
+/* 确保左侧头像区域没有其他内容重叠 */
+#avatar-preview-img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.avatar-container {
+    overflow: hidden;
+    background-color: #fff;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h4 class="mb-0 py-2"><i class="fas fa-user-edit mr-2"></i>个人资料设置</h4>
                 </div>
-                <!-- bio -->
-                <div class="form-group col-md-4">
-                    <label for="bio">简介</label>
-                    <!-- 文本区域 -->
-                    <textarea type="text" class="form-control" id="bio" name="bio" rows="12">{{ profile.bio }}</textarea>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- 左侧个人信息概述 -->
+                        <div class="col-md-4 border-right">
+                            <div class="text-center mb-4">
+                                <div class="avatar-container mx-auto" style="width: 160px; height: 160px;">
+                                    {% if profile.avatar %}
+                                        <img src="{{ profile.avatar.url }}" alt="{{ user.username }}" id="current-avatar" class="rounded-circle">
+                                        <div class="avatar-overlay">
+                                            <i class="fas fa-camera text-white fa-2x"></i>
+                                        </div>
+                                    {% else %}
+                                        <div id="avatar-placeholder" class="rounded-circle">
+                                            <i class="fas fa-user fa-5x text-secondary"></i>
+                                        </div>
+                                        <div class="avatar-overlay">
+                                            <i class="fas fa-camera text-white fa-2x"></i>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <h5 class="mt-3 font-weight-bold">{{ user.username }}</h5>
+                                <p class="text-muted">
+                                    <i class="fas fa-clock mr-1"></i>加入于 {{ user.date_joined|date:"Y年m月d日" }}
+                                </p>
+                            </div>
+                            <div class="mb-4">
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="fas fa-envelope text-primary mr-2"></i>
+                                    <span>{{ user.email|default:"暂无邮箱" }}</span>
+                                </div>
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="fas fa-phone text-success mr-2"></i>
+                                    <span>{{ profile.phone|default:"暂无电话" }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 右侧编辑表单 -->
+                        <div class="col-md-8">
+                            <form method="post" action="." enctype="multipart/form-data" id="profile-form">
+                                {% csrf_token %}
+                                
+                                <!-- 头像上传 -->
+                                <div class="form-group">
+                                    <label class="font-weight-bold"><i class="fas fa-camera mr-1"></i>更新头像</label>
+                                    
+                                    <!-- 头像上传区域 -->
+                                    <div id="avatar-upload-area" class="border rounded p-4 text-center bg-light mb-3" style="cursor: pointer;">
+                                        <input type="file" name="avatar" id="avatar" accept="image/*" style="display: none;">
+                                        <div id="avatar-preview" class="mb-3" {% if profile.avatar %}style="display: block;"{% else %}style="display: none;"{% endif %}>
+                                            <div class="preview-container mx-auto" style="width: 150px; height: 150px; border-radius: 50%; overflow: hidden; box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,.075);">
+                                                <img id="avatar-preview-img" src="{% if profile.avatar %}{{ profile.avatar.url }}{% endif %}" class="w-100 h-100" style="object-fit: cover;">
+                                            </div>
+                                            <button type="button" id="remove-avatar" class="btn btn-sm btn-outline-danger mt-2">
+                                                <i class="fas fa-times mr-1"></i>移除头像
+                                            </button>
+                                        </div>
+                                        <div id="avatar-dropzone" class="py-4" {% if profile.avatar %}style="display: none;"{% else %}style="display: block;"{% endif %}>
+                                            <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
+                                            <p class="mb-1 font-weight-bold">点击或拖放图片到此处上传</p>
+                                            <p class="text-muted small mb-0">支持JPG、PNG格式，最大5MB</p>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <small class="form-text text-muted">推荐使用正方形图片，可裁剪为圆形头像</small>
+                                        <small id="avatar-status" class="form-text text-success" style="display: none;">✓ 头像已选择，提交表单后生效</small>
+                                    </div>
+                                    
+                                    <!-- 存储裁剪后的头像数据 -->
+                                    <input type="hidden" name="avatar_cropped" id="avatar-cropped">
+                                </div>
+
+                                <!-- 电话号码 -->
+                                <div class="form-group mt-4">
+                                    <label for="phone" class="font-weight-bold"><i class="fas fa-phone-alt mr-1"></i>电话号码</label>
+                                    <input type="text" 
+                                           class="form-control shadow-sm" 
+                                           id="phone" 
+                                           name="phone" 
+                                           value="{{ profile.phone }}" 
+                                           placeholder="请输入您的电话号码"
+                                    >
+                                </div>
+                                
+                                <!-- 个人简介 -->
+                                <div class="form-group mt-4">
+                                    <label for="bio" class="font-weight-bold"><i class="fas fa-address-card mr-1"></i>个人简介</label>
+                                    <textarea class="form-control shadow-sm" 
+                                              id="bio" 
+                                              name="bio" 
+                                              rows="6" 
+                                              placeholder="介绍一下自己吧..."
+                                    >{{ profile.bio }}</textarea>
+                                    <small class="form-text text-muted">让其他用户了解您的兴趣和专长</small>
+                                </div>
+                                
+                                <!-- 提交按钮 -->
+                                <div class="mt-4 text-right">
+                                    <a href="{% url 'article:article_list' %}" class="btn btn-light mr-2">
+                                        <i class="fas fa-times mr-1"></i>取消
+                                    </a>
+                                    <button type="submit" class="btn btn-primary shadow-sm">
+                                        <i class="fas fa-save mr-1"></i>保存修改
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
                 </div>
-                <!-- 提交按钮 -->
-                <button type="submit" class="btn btn-primary">提交</button>
-            </form>
+            </div>
         </div>
     </div>
 </div>
+
+<!-- 图片裁剪模态框 -->
+<div class="modal fade" id="cropperModal" tabindex="-1" role="dialog" aria-labelledby="cropperModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cropperModalLabel"><i class="fas fa-crop mr-2"></i>裁剪头像</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="img-container">
+                            <img id="cropper-image" src="" class="img-fluid">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center mb-3">
+                            <h6 class="mb-2 text-muted">预览效果</h6>
+                            <div class="crop-preview mx-auto"></div>
+                        </div>
+                        <div class="d-flex justify-content-center mb-3">
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-outline-secondary" id="zoom-in">
+                                    <i class="fas fa-search-plus"></i>
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary" id="zoom-out">
+                                    <i class="fas fa-search-minus"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-center">
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-outline-secondary" id="rotate-left">
+                                    <i class="fas fa-undo"></i>
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary" id="rotate-right">
+                                    <i class="fas fa-redo"></i>
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary" id="flip-horizontal">
+                                    <i class="fas fa-arrows-alt-h"></i>
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary" id="flip-vertical">
+                                    <i class="fas fa-arrows-alt-v"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="crop-button">应用裁剪</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* 头像容器悬停效果 */
+.avatar-container:hover .avatar-overlay {
+    opacity: 1;
+    cursor: pointer;
+}
+
+/* 头像上传区域样式 */
+#avatar-upload-area {
+    transition: all 0.3s;
+    border: 2px dashed #dee2e6;
+}
+#avatar-upload-area:hover, #avatar-upload-area.dragover {
+    border-color: #007bff;
+    background-color: rgba(0, 123, 255, 0.05);
+}
+</style>
+
+<!-- 引入自定义脚本以增强交互体验 -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const avatarUploadArea = document.getElementById('avatar-upload-area');
+        const avatarInput = document.getElementById('avatar');
+        const avatarPreview = document.getElementById('avatar-preview');
+        const avatarPreviewImg = document.getElementById('avatar-preview-img');
+        const avatarDropzone = document.getElementById('avatar-dropzone');
+        const removeAvatarBtn = document.getElementById('remove-avatar');
+        const avatarStatus = document.getElementById('avatar-status');
+        const currentAvatar = document.getElementById('current-avatar');
+        const avatarPlaceholder = document.getElementById('avatar-placeholder');
+        const avatarContainer = document.querySelector('.avatar-container');
+        const cropperModal = $('#cropperModal');
+        const cropperImage = document.getElementById('cropper-image');
+        const cropButton = document.getElementById('crop-button');
+        const avatarCroppedInput = document.getElementById('avatar-cropped');
+        
+        let cropper;
+        
+        // 点击头像容器也能触发文件选择
+        avatarContainer.addEventListener('click', function() {
+            avatarInput.click();
+        });
+        
+        // 点击上传区域触发文件选择
+        avatarUploadArea.addEventListener('click', function() {
+            avatarInput.click();
+        });
+        
+        // 文件选择后的处理
+        avatarInput.addEventListener('change', function(e) {
+            if (e.target.files && e.target.files[0]) {
+                let file = e.target.files[0];
+                
+                // 文件类型验证
+                if (!file.type.match('image.*')) {
+                    alert('请选择图片文件！');
+                    return;
+                }
+                
+                // 文件大小验证（最大5MB）
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('图片大小不能超过5MB！');
+                    return;
+                }
+                
+                // 读取文件并打开裁剪模态框
+                let reader = new FileReader();
+                reader.onload = function(e) {
+                    // 设置裁剪图片源
+                    cropperImage.src = e.target.result;
+                    
+                    // 打开模态框
+                    cropperModal.modal('show');
+                    
+                    // 在模态框完全显示后初始化Cropper
+                    cropperModal.on('shown.bs.modal', function() {
+                        // 销毁可能存在的旧实例
+                        if (cropper) {
+                            cropper.destroy();
+                        }
+                        
+                        // 初始化Cropper.js
+                        cropper = new Cropper(cropperImage, {
+                            aspectRatio: 1, // 强制1:1比例
+                            viewMode: 1, // 限制裁剪框不超出图片的范围
+                            dragMode: 'move', // 拖动模式设为移动图片
+                            autoCropArea: 0.8, // 初始裁剪区域大小
+                            cropBoxMovable: true,
+                            cropBoxResizable: true,
+                            toggleDragModeOnDblclick: false, // 禁用双击切换模式
+                            minContainerWidth: 300,
+                            minContainerHeight: 300,
+                            preview: '.crop-preview', // 预览容器
+                            ready: function() {
+                                // 如果图片较大，自动缩放适应容器
+                                if (this.cropper.getImageData().naturalWidth > 800) {
+                                    this.cropper.zoomTo(0.5);
+                                }
+                            }
+                        });
+                    });
+                    
+                    // 模态框关闭后销毁Cropper实例
+                    cropperModal.on('hidden.bs.modal', function() {
+                        if (cropper) {
+                            cropper.destroy();
+                            cropper = null;
+                        }
+                    });
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        // 缩放按钮
+        document.getElementById('zoom-in').addEventListener('click', function() {
+            if (cropper) cropper.zoom(0.1);
+        });
+        
+        document.getElementById('zoom-out').addEventListener('click', function() {
+            if (cropper) cropper.zoom(-0.1);
+        });
+        
+        // 旋转按钮
+        document.getElementById('rotate-left').addEventListener('click', function() {
+            if (cropper) cropper.rotate(-45);
+        });
+        
+        document.getElementById('rotate-right').addEventListener('click', function() {
+            if (cropper) cropper.rotate(45);
+        });
+        
+        // 翻转按钮
+        document.getElementById('flip-horizontal').addEventListener('click', function() {
+            if (cropper) {
+                cropper.scaleX(cropper.getData().scaleX === 1 ? -1 : 1);
+            }
+        });
+        
+        document.getElementById('flip-vertical').addEventListener('click', function() {
+            if (cropper) {
+                cropper.scaleY(cropper.getData().scaleY === 1 ? -1 : 1);
+            }
+        });
+        
+        // 应用裁剪
+        cropButton.addEventListener('click', function() {
+            if (!cropper) return;
+            
+            // 获取裁剪数据
+            let canvas = cropper.getCroppedCanvas({
+                width: 300,
+                height: 300,
+                fillColor: '#fff',
+                imageSmoothingEnabled: true,
+                imageSmoothingQuality: 'high'
+            });
+            
+            if (canvas) {
+                // 将裁剪后的图像转为base64
+                let croppedImageDataURL = canvas.toDataURL('image/jpeg', 0.9);
+                
+                // 更新预览
+                avatarPreviewImg.src = croppedImageDataURL;
+                avatarPreview.style.display = 'block';
+                avatarDropzone.style.display = 'none';
+                avatarStatus.style.display = 'block';
+                
+                // 同时更新左侧当前头像预览
+                if (currentAvatar) {
+                    currentAvatar.src = croppedImageDataURL;
+                } else if (avatarPlaceholder) {
+                    avatarPlaceholder.style.display = 'none';
+                    // 创建新的头像元素
+                    let newAvatar = document.createElement('img');
+                    newAvatar.id = 'current-avatar';
+                    newAvatar.src = croppedImageDataURL;
+                    newAvatar.className = 'rounded-circle';
+                    avatarContainer.insertBefore(newAvatar, avatarContainer.firstChild);
+                }
+                
+                // 存储裁剪后的图像数据到隐藏字段
+                avatarCroppedInput.value = croppedImageDataURL;
+                
+                // 关闭模态框
+                cropperModal.modal('hide');
+            }
+        });
+        
+        // 拖放功能
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            avatarUploadArea.addEventListener(eventName, function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            });
+        });
+        
+        // 拖动进入和悬停时的效果
+        ['dragenter', 'dragover'].forEach(eventName => {
+            avatarUploadArea.addEventListener(eventName, function() {
+                avatarUploadArea.classList.add('dragover');
+            });
+        });
+        
+        // 拖动离开和放下时的效果
+        ['dragleave', 'drop'].forEach(eventName => {
+            avatarUploadArea.addEventListener(eventName, function() {
+                avatarUploadArea.classList.remove('dragover');
+            });
+        });
+        
+        // 处理文件放下事件
+        avatarUploadArea.addEventListener('drop', function(e) {
+            let files = e.dataTransfer.files;
+            if (files && files.length) {
+                avatarInput.files = files;
+                // 触发change事件
+                const event = new Event('change', { bubbles: true });
+                avatarInput.dispatchEvent(event);
+            }
+        });
+        
+        // 移除头像
+        removeAvatarBtn.addEventListener('click', function(e) {
+            e.stopPropagation(); // 阻止冒泡到上传区域
+            avatarInput.value = '';
+            avatarPreview.style.display = 'none';
+            avatarDropzone.style.display = 'block';
+            avatarStatus.style.display = 'none';
+            avatarCroppedInput.value = '';
+            
+            // 添加一个隐藏的输入字段，表示要删除当前头像
+            if (!document.getElementById('remove_avatar')) {
+                let input = document.createElement('input');
+                input.type = 'hidden';
+                input.id = 'remove_avatar';
+                input.name = 'remove_avatar';
+                input.value = 'true';
+                document.getElementById('profile-form').appendChild(input);
+            }
+            
+            // 更新左侧当前头像预览
+            if (currentAvatar) {
+                currentAvatar.remove();
+                if (!avatarPlaceholder) {
+                    // 创建占位符
+                    let placeholder = document.createElement('div');
+                    placeholder.id = 'avatar-placeholder';
+                    placeholder.className = 'bg-light rounded-circle mx-auto d-flex align-items-center justify-content-center';
+                    placeholder.style = 'width: 160px; height: 160px;';
+                    placeholder.innerHTML = '<i class="fas fa-user fa-5x text-secondary"></i>';
+                    avatarContainer.insertBefore(placeholder, avatarContainer.firstChild);
+                } else {
+                    avatarPlaceholder.style.display = 'flex';
+                }
+            }
+        });
+    });
+</script>
 {% endblock content %}

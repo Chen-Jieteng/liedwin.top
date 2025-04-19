@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
+from django.db.models import Count
 
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
@@ -10,6 +11,47 @@ from .forms import UserLoginForm, UserRegisterForm
 from .forms import ProfileForm
 from .models import Profile
 
+# 导入文章模型
+from article.models import ArticlePost
+
+# 作者统计信息API
+def user_stats_api(request, id):
+    """
+    API端点，返回作者的统计信息:
+    - 文章数量
+    - 粉丝数量
+    - 关注数量
+    """
+    try:
+        user = User.objects.get(id=id)
+        
+        # 获取用户的文章数
+        article_count = ArticlePost.objects.filter(author=user).count()
+        
+        # TODO: 如果有粉丝和关注系统，在这里获取数据
+        # 目前使用占位数据
+        follower_count = 0
+        following_count = 0
+        
+        data = {
+            'article_count': article_count,
+            'follower_count': follower_count,
+            'following_count': following_count,
+            'status': 'success'
+        }
+        
+        return JsonResponse(data)
+        
+    except User.DoesNotExist:
+        return JsonResponse({
+            'status': 'error',
+            'message': '用户不存在'
+        }, status=404)
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=500)
 
 # Create your views here.
 
@@ -113,8 +155,50 @@ def profile_edit(request, id):
             profile.phone = profile_cd['phone']
             profile.bio = profile_cd['bio']
 
-            # 如果 request.FILES 存在文件，则保存
-            if 'avatar' in request.FILES:
+            # 如果要求删除头像
+            if 'remove_avatar' in request.POST and request.POST['remove_avatar'] == 'true':
+                # 清除旧的头像文件
+                if profile.avatar:
+                    import os
+                    if os.path.isfile(profile.avatar.path):
+                        os.remove(profile.avatar.path)
+                # 将头像字段置空
+                profile.avatar = None
+            # 如果有裁剪后的头像数据
+            elif 'avatar_cropped' in request.POST and request.POST['avatar_cropped']:
+                # 处理base64格式的图片数据
+                import base64
+                import os
+                import uuid
+                from django.core.files.base import ContentFile
+                from datetime import datetime
+                
+                # 解析base64数据
+                avatar_data = request.POST['avatar_cropped']
+                # 去除MIME类型前缀 (例如 "data:image/jpeg;base64,")
+                if ',' in avatar_data:
+                    _, avatar_data = avatar_data.split(',', 1)
+                    
+                # 将base64数据转换为文件对象
+                avatar_file = ContentFile(base64.b64decode(avatar_data))
+                
+                # 生成唯一文件名
+                today = datetime.now().strftime('%Y%m%d')
+                filename = f"avatar_{today}_{uuid.uuid4().hex}.jpg"
+                file_path = os.path.join('avatar', today, filename)
+                
+                # 清除原有头像（如果存在）
+                if profile.avatar:
+                    try:
+                        if os.path.isfile(profile.avatar.path):
+                            os.remove(profile.avatar.path)
+                    except Exception as e:
+                        print(f"删除旧头像失败: {e}")
+                
+                # 保存新头像到模型
+                profile.avatar.save(file_path, avatar_file, save=False)
+            # 如果 request.FILES 存在文件，则保存（备用，一般不会执行到这里）
+            elif 'avatar' in request.FILES:
                 profile.avatar = profile_cd["avatar"]
 
             profile.save()

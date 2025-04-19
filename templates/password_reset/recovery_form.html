@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load bootstrap4 %}
+
+{% block title %}密码重置{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h4 class="mb-0 py-2"><i class="fas fa-key mr-2"></i>密码重置</h4>
+                </div>
+                <div class="card-body p-4">
+                    <div class="mb-4">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            请输入您的邮箱地址，我们将向您发送一封包含密码重置链接的邮件。
+                        </div>
+                    </div>
+                    
+                    <form method="post" action="." class="form">
+                        {% csrf_token %}
+                        
+                        <!-- 电子邮箱输入 -->
+                        <div class="form-group">
+                            <label for="id_username_or_email"><i class="fas fa-envelope text-primary mr-2"></i>电子邮箱</label>
+                            <input type="email" name="username_or_email" 
+                                   id="id_username_or_email" 
+                                   class="form-control shadow-sm" 
+                                   placeholder="请输入您的注册邮箱" 
+                                   required>
+                        </div>
+                        
+                        <!-- 提交按钮 -->
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary btn-block shadow-sm">
+                                <i class="fas fa-paper-plane mr-2"></i>发送重置链接
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <!-- 返回登录 -->
+                    <div class="mt-4 text-center">
+                        <a href="{% url 'userprofile:login' %}" class="text-decoration-none">
+                            <i class="fas fa-arrow-left mr-1"></i>返回登录
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

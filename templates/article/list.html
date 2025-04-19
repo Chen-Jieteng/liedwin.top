@@ -8,134 +8,366 @@
     首页
 {% endblock title %}
 
+<!-- 加载jQuery库 -->
+{% block header_extends %}
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+{% endblock header_extends %}
+
 <!-- 写入 base.html 中定义的 content -->
 {% block content %}
 
-<!-- 定义放置文章标题的div容器 -->
 <div class="container">
-    <hr>
-    <!-- 面包屑导航 -->
-    <nav aria-label="breadcrumb" class="top-nav py-1 bg-light">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item">
-                <a href="{% url 'article:article_list' %}?search={{ search }}&column={{ column }}&tag={{ tag }}">
-                    最新
-                </a>
-            </li>
-            <li class="breadcrumb-item">
-                <a href="{% url 'article:article_list' %}?order=total_views&search={{ search }}&column={{ column }}&tag={{ tag }}">
-                    最热
-                </a>
-            </li>
-        </ol>
-        <!-- 搜索栏 -->
-        <form class="form-inline" >
-            <label class="sr-only">content</label>
-            <input type="text"
-                class="form-control mr-sm-2"
-                name="search"
-                placeholder="搜索文章..."
-                required
-            >
-        <!-- 搜索提示语 -->
-        {% if search %}
-            {% if articles %}
-                <h4><span style="color: red">"{{ search }}"</span>的搜索结果如下：</h4>
-                <hr>
+    <!-- 搜索栏 -->
+    <div class="mb-4">
+        <form class="position-relative">
+            <div class="input-group">
+                <input type="text" name="search" 
+                       class="form-control form-control-lg border-0 shadow-sm rounded-pill pl-4 pr-5" 
+                       placeholder="搜索文章..." 
+                       value="{{ search|default:'' }}">
+                <div class="input-group-append">
+                    <button type="submit" class="btn position-absolute" style="right: 0; top: 0; bottom: 0;">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+    
+    <!-- 高级筛选面板 -->
+    <div class="card border-0 shadow-sm mb-4 filter-panel">
+        <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center py-3">
+            <h5 class="mb-0">
+                <i class="fas fa-filter mr-2"></i>筛选器
+            </h5>
+            <button class="btn btn-sm btn-outline-secondary" type="button" data-toggle="collapse" data-target="#filterContent" aria-expanded="true" aria-controls="filterContent">
+                <i class="fas fa-chevron-up" id="filterToggleIcon"></i>
+            </button>
+        </div>
+        <div class="collapse show" id="filterContent">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <!-- 排序选项 -->
+                        <div class="mb-3">
+                            <h6 class="text-muted mb-2"><i class="fas fa-sort mr-1"></i>排序方式</h6>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url 'article:article_list' %}?search={{ search }}&column={{ column }}&tag={{ tag }}" 
+                                   class="btn {% if not order %}btn-dark{% else %}btn-outline-dark{% endif %}">
+                                    <i class="fas fa-clock mr-1"></i>最新发布
+                                </a>
+                                <a href="{% url 'article:article_list' %}?order=total_views&search={{ search }}&column={{ column }}&tag={{ tag }}" 
+                                   class="btn {% if order == 'total_views' %}btn-dark{% else %}btn-outline-dark{% endif %}">
+                                    <i class="fas fa-fire mr-1"></i>阅读最多
+                                </a>
+                                <a href="{% url 'article:article_list' %}?order=comments&search={{ search }}&column={{ column }}&tag={{ tag }}" 
+                                   class="btn {% if order == 'comments' %}btn-dark{% else %}btn-outline-dark{% endif %}">
+                                    <i class="fas fa-comments mr-1"></i>评论最多
+                                </a>
+                                <a href="{% url 'article:article_list' %}?order=likes&search={{ search }}&column={{ column }}&tag={{ tag }}" 
+                                   class="btn {% if order == 'likes' %}btn-dark{% else %}btn-outline-dark{% endif %}">
+                                    <i class="fas fa-heart mr-1"></i>点赞最多
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <!-- 栏目分类 -->
+                        <div class="mb-3">
+                            <h6 class="text-muted mb-2"><i class="fas fa-folder mr-1"></i>文章分类</h6>
+                            <div class="d-flex flex-wrap">
+                                <a href="{% url 'article:article_list' %}?search={{ search }}&tag={{ tag }}&order={{ order }}" 
+                                   class="badge {% if not column %}badge-dark{% else %}badge-light text-muted{% endif %} mr-2 mb-2 px-3 py-2">
+                                   全部分类
+                                </a>
+                                
+                                {% for col in all_columns %}
+                                <a href="{% url 'article:article_list' %}?search={{ search }}&column={{ col.id }}&tag={{ tag }}&order={{ order }}" 
+                                   class="badge {% if column == col.id|stringformat:'i' %}badge-primary{% else %}badge-light text-muted{% endif %} mr-2 mb-2 px-3 py-2">
+                                    {{ col.title }}
+                                    <span class="small">({{ col.article.count }})</span>
+                                </a>
+                                {% empty %}
+                                <span class="badge badge-light text-muted mr-2 mb-2 px-3 py-2">暂无分类</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <!-- 热门标签 -->
+                        <div>
+                            <h6 class="text-muted mb-2"><i class="fas fa-tags mr-1"></i>热门标签</h6>
+                            <div class="d-flex flex-wrap">
+                                <a href="{% url 'article:article_list' %}?search={{ search }}&column={{ column }}&order={{ order }}" 
+                                   class="badge {% if not tag %}badge-dark{% else %}badge-light text-muted{% endif %} mr-2 mb-2 px-3 py-2">
+                                   全部标签
+                                </a>
+                                
+                                {% for t in hot_tags %}
+                                <a href="{% url 'article:article_list' %}?search={{ search }}&column={{ column }}&tag={{ t.name }}&order={{ order }}" 
+                                   class="badge {% if tag == t.name %}badge-info{% else %}badge-light text-muted{% endif %} mr-2 mb-2 px-3 py-2">
+                                    {{ t.name }}
+                                    <span class="small">({{ t.num_times }})</span>
+                                </a>
+                                {% empty %}
+                                <span class="badge badge-light text-muted mr-2 mb-2 px-3 py-2">暂无标签</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 文章列表头部 -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="mb-0">
+            {% if not search and not column and not tag %}
+                全部文章
             {% else %}
-                <h4>暂无<span style="color: red">"{{ search }}"</span>有关的文章。</h4>
-                <hr>
+                筛选结果
             {% endif %}
-        {% endif %}
-    </nav>
-    <hr>
-
-    <!-- 列表循环 -->
-    <div class="row mt-2">
+            <small class="text-muted ml-2">{{ articles.paginator.count }}篇</small>
+        </h4>
+        
+        <!-- 列表显示模式 -->
+        <div class="btn-group view-toggle">
+            <button type="button" class="btn btn-outline-dark btn-sm" id="viewGrid">
+                <i class="fas fa-th-large"></i>
+            </button>
+            <button type="button" class="btn btn-outline-dark btn-sm" id="viewList">
+                <i class="fas fa-list"></i>
+            </button>
+        </div>
+    </div>
+    
+    <!-- 文章列表 -->
+    <div class="row" id="articleGrid">
         {% for article in articles %}
-            <!-- 文章内容 -->
-            
-            <!-- 标题图 -->
+        <div class="col-12 col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 border-0 shadow-sm hover-shadow">
+                <!-- 文章封面 -->
             {% if article.avatar %}
-                <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3">
-                    <img src="{{ article.avatar.url }}" 
-                         alt="avatar" 
-                         style="max-width:100%; border-radius: 20px"
-                    >
+                <div class="card-img-top article-cover">
+                    <img src="{{ article.avatar.url }}" alt="封面" class="img-fluid">
+                </div>
+                {% else %}
+                <div class="card-img-top article-cover-placeholder bg-light d-flex align-items-center justify-content-center p-4">
+                    <i class="fas fa-newspaper text-muted fa-3x"></i>
                 </div>
             {% endif %}
 
-            <div class="col">
-                <!-- 栏目 -->
+                <div class="card-body d-flex flex-column">
+                    <!-- 栏目和标签 -->
+                    <div class="d-flex flex-wrap mb-2">
                 {% if article.column %}
-                    <a  role="button" 
-                        href="{% url 'article:article_list' %}?column={{ article.column.id }}"
-                        class="btn btn-sm mb-2
-                            {% if article.column.title == 'Django' %}
-                                btn-success
-                            {% elif article.column.title == 'Java' %}
-                                btn-danger
-                            {% elif article.column.title == 'HTML' %}
-                                btn-warning
-                            {% endif %}
-                        "
-                    >
+                        <a href="{% url 'article:article_list' %}?column={{ article.column.id }}" 
+                           class="badge badge-pill badge-primary mr-2 mb-1 px-3 py-2">
                         {{ article.column }}
                     </a>
                 {% endif %}
 
-                <!-- 标签 -->
-                <span>
-                    {% for tag in article.tags.all %}
+                        {% for tag in article.tags.all|slice:":2" %}
                         <a href="{% url 'article:article_list' %}?tag={{ tag }}"
-                           class="badge badge-secondary" 
-                        >
+                           class="badge badge-pill badge-light text-muted mr-2 mb-1 px-2 py-1">
                             {{ tag }}
                         </a>
                     {% endfor %}
-                </span>
+                        
+                        {% if article.tags.count > 2 %}
+                        <span class="badge badge-pill badge-light text-muted mb-1 px-2 py-1">+{{ article.tags.count|add:"-2" }}</span>
+                        {% endif %}
+                    </div>
 
                 <!-- 标题 -->
-                <h4>
-                    <b>
-                        <a href="{% url 'article:article_detail' article.id %}"
-                           style="color: black;" 
-                        >
+                    <h5 class="card-title mb-2">
+                        <a href="{% url 'article:article_detail' article.id %}" class="text-dark stretched-link">
+                            {% if article.title|length > 40 %}
+                                {{ article.title|slice:":40" }}...
+                            {% else %}
                             {{ article.title }}
+                            {% endif %}
                         </a>
-                    </b>
-                </h4>
+                    </h5>
+                    
                 <!-- 摘要 -->
-                <div>
-                    <p style="color: gray;">
-                        {{ article.body|slice:'100' }}...
+                    <p class="card-text text-muted mb-3 flex-grow-1">
+                        {{ article.body|striptags|slice:"0:80" }}{% if article.body|striptags|length > 80 %}...{% endif %}
                     </p>
+                    
+                    <!-- 文章元信息 -->
+                    <div class="d-flex align-items-center text-muted">
+                        <!-- 作者头像和名称 -->
+                        <div class="d-flex align-items-center mr-auto">
+                            {% if article.author.profile.avatar %}
+                            <div class="author-avatar author-popover rounded-circle overflow-hidden shadow-sm mr-2" 
+                                 style="width: 24px; height: 24px; cursor: pointer;" 
+                                 data-toggle="popover" 
+                                 data-placement="top" 
+                                 data-trigger="hover"
+                                 data-html="true"
+                                 data-author-id="{{ article.author.id }}"
+                                 data-author-name="{{ article.author.username }}"
+                                 data-author-avatar="{% if article.author.profile.avatar %}{{ article.author.profile.avatar.url }}{% endif %}"
+                                 data-author-bio="{% if article.author.profile.bio %}{{ article.author.profile.bio }}{% else %}这个人很懒，什么都没写...{% endif %}">
+                                <img src="{{ article.author.profile.avatar.url }}" alt="{{ article.author }}" class="w-100 h-100" style="object-fit: cover;">
+                            </div>
+                            {% else %}
+                            <div class="author-avatar author-popover rounded-circle bg-light d-flex align-items-center justify-content-center shadow-sm mr-2" 
+                                 style="width: 24px; height: 24px; cursor: pointer;"
+                                 data-toggle="popover" 
+                                 data-placement="top" 
+                                 data-trigger="hover"
+                                 data-html="true"
+                                 data-author-id="{{ article.author.id }}"
+                                 data-author-name="{{ article.author.username }}"
+                                 data-author-avatar=""
+                                 data-author-bio="{% if article.author.profile.bio %}{{ article.author.profile.bio }}{% else %}这个人很懒，什么都没写...{% endif %}">
+                                <i class="fas fa-user text-secondary" style="font-size: 12px;"></i>
+                            </div>
+                            {% endif %}
+                            <span class="small">{{ article.author.username }}</span>
+                        </div>
+                        
+                        <!-- 阅读量和评论数 -->
+                        <div class="d-flex align-items-center">
+                            <span class="mr-3 small" title="阅读量">
+                                <i class="fas fa-eye mr-1 text-info"></i>{{ article.total_views }}
+                            </span>
+                            <span class="mr-3 small" title="评论数">
+                                <i class="fas fa-comment mr-1 text-success"></i>{{ article.comments.count }}
+                            </span>
+                            <span class="small" title="发布时间">
+                                <i class="fas fa-clock mr-1 text-warning"></i>{{ article.created|timesince_zh }}
+                            </span>
+                        </div>
+                    </div>
                 </div>
-                <!-- 注脚 -->
-                <p>
-                    <!-- 附加信息 -->
-                    <span>
-                        <i class="fas fa-eye" style="color: lightskyblue;"></i>
-                        {{ article.total_views }}&nbsp;&nbsp;&nbsp;
-                    </span>
-                    <span>
-                        <i class="fas fa-comments" style="color: yellowgreen;"></i>
-                        {{ article.comments.count }}&nbsp;&nbsp;&nbsp;
-                    </span>
-                    <span>
-                        <i class="fas fa-clock" style="color: pink;"></i>
-                        <!--
-                        {{ article.created|date:'Y-m-d' }}
-                        -->
-                        {{ article.created|timesince_zh }}
-                    </span>
-                </p>
             </div>
-            <hr style="width: 100%;"/>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
+            <h4 class="text-muted">暂无相关文章</h4>
+            {% if search or column or tag %}
+            <p class="text-muted">尝试其他搜索条件或<a href="{% url 'article:article_list' %}">查看全部文章</a></p>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- 列表视图(默认隐藏) -->
+    <div style="display:none;" id="articleList">
+        {% for article in articles %}
+        <div class="card border-0 shadow-sm mb-3 hover-shadow-sm">
+            <div class="row no-gutters">
+                <!-- 文章封面(列表模式) -->
+                <div class="col-md-3">
+                    {% if article.avatar %}
+                    <div class="h-100 article-cover-list">
+                        <img src="{{ article.avatar.url }}" alt="封面" class="img-fluid h-100 w-100 object-cover">
+                    </div>
+                    {% else %}
+                    <div class="h-100 bg-light d-flex align-items-center justify-content-center p-4 article-cover-list">
+                        <i class="fas fa-newspaper text-muted fa-3x"></i>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- 文章内容(列表模式) -->
+                <div class="col-md-9">
+                    <div class="card-body">
+                        <!-- 文章标题 -->
+                        <h5 class="card-title">
+                            <a href="{% url 'article:article_detail' article.id %}" class="text-dark stretched-link">
+                                {{ article.title }}
+                            </a>
+                        </h5>
+                        
+                        <!-- 摘要 -->
+                        <p class="card-text text-muted mb-2">
+                            {{ article.body|striptags|slice:"0:150" }}{% if article.body|striptags|length > 150 %}...{% endif %}
+                        </p>
+                        
+                        <!-- 底部信息 -->
+                        <div class="d-flex flex-wrap align-items-center">
+                            <!-- 栏目和标签 -->
+                            <div class="mr-auto mb-2">
+                                {% if article.column %}
+                                <a href="{% url 'article:article_list' %}?column={{ article.column.id }}" class="badge badge-primary mr-1">
+                                    {{ article.column }}
+                                </a>
+                                {% endif %}
+                                
+                                {% for tag in article.tags.all|slice:":3" %}
+                                <a href="{% url 'article:article_list' %}?tag={{ tag }}" class="badge badge-light text-muted mr-1">
+                                    {{ tag }}
+                                </a>
+                                {% endfor %}
+                            </div>
+                            
+                            <!-- 文章元信息 -->
+                            <div class="d-flex align-items-center text-muted small">
+                                <!-- 作者 -->
+                                <div class="d-flex align-items-center mr-3">
+                                    {% if article.author.profile.avatar %}
+                                    <div class="author-avatar author-popover rounded-circle overflow-hidden shadow-sm mr-1" 
+                                         style="width: 20px; height: 20px; cursor: pointer;" 
+                                         data-toggle="popover" 
+                                         data-placement="top" 
+                                         data-trigger="hover"
+                                         data-html="true"
+                                         data-author-id="{{ article.author.id }}"
+                                         data-author-name="{{ article.author.username }}"
+                                         data-author-avatar="{% if article.author.profile.avatar %}{{ article.author.profile.avatar.url }}{% endif %}"
+                                         data-author-bio="{% if article.author.profile.bio %}{{ article.author.profile.bio }}{% else %}这个人很懒，什么都没写...{% endif %}">
+                                        <img src="{{ article.author.profile.avatar.url }}" alt="{{ article.author }}" class="w-100 h-100" style="object-fit: cover;">
+                                    </div>
+                                    {% else %}
+                                    <div class="author-avatar author-popover rounded-circle bg-light d-flex align-items-center justify-content-center shadow-sm mr-1" 
+                                         style="width: 20px; height: 20px; cursor: pointer;"
+                                         data-toggle="popover" 
+                                         data-placement="top" 
+                                         data-trigger="hover"
+                                         data-html="true"
+                                         data-author-id="{{ article.author.id }}"
+                                         data-author-name="{{ article.author.username }}"
+                                         data-author-avatar=""
+                                         data-author-bio="{% if article.author.profile.bio %}{{ article.author.profile.bio }}{% else %}这个人很懒，什么都没写...{% endif %}">
+                                        <i class="fas fa-user text-secondary" style="font-size: 10px;"></i>
+                                    </div>
+                                    {% endif %}
+                                    <span>{{ article.author.username }}</span>
+                                </div>
+                                
+                                <!-- 统计 -->
+                                <span class="mr-2" title="阅读量">
+                                    <i class="fas fa-eye mr-1 text-info"></i>{{ article.total_views }}
+                    </span>
+                                <span class="mr-2" title="评论数">
+                                    <i class="fas fa-comment mr-1 text-success"></i>{{ article.comments.count }}
+                    </span>
+                                <span title="发布时间">
+                                    <i class="fas fa-clock mr-1 text-warning"></i>{{ article.created|timesince_zh }}
+                    </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="text-center py-5">
+            <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
+            <h4 class="text-muted">暂无相关文章</h4>
+            {% if search or column or tag %}
+            <p class="text-muted">尝试其他搜索条件或<a href="{% url 'article:article_list' %}">查看全部文章</a></p>
+            {% endif %}
+        </div>
         {% endfor %}
     </div>
 
-    <!-- 修改为方形分页导航 -->
+    <!-- 分页导航 -->
+    {% if articles.has_other_pages %}
     <nav aria-label="Page navigation" class="my-4">
         <div class="d-flex justify-content-center align-items-center">
             <ul class="pagination mb-0">
@@ -153,7 +385,7 @@
                         </a>
                     </li>
                 {% endif %}
-                
+
                 <!-- 页码显示逻辑 -->
                 {% if articles.paginator.num_pages > 1 %}
                     <!-- 第一页始终显示 -->
@@ -219,85 +451,256 @@
             </div>
         </div>
     </nav>
-
-    <!-- 页面跳转脚本 -->
-    <script>
-        document.getElementById('pageJumpButton').addEventListener('click', function() {
-            const pageInput = document.getElementById('pageJumpInput');
-            const pageNum = parseInt(pageInput.value);
-            if (pageNum && pageNum >= 1 && pageNum <= {{ articles.paginator.num_pages }}) {
-                window.location.href = "?page=" + pageNum + "&order={{ order }}&search={{ search }}&column={{ column }}&tag={{ tag }}";
-            }
-        });
-        
-        document.getElementById('pageJumpInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                document.getElementById('pageJumpButton').click();
-            }
-        });
-    </script>
+    {% endif %}
 </div>
 
 <style>
-    .top-nav {
-        display: flex;
-        justify-content: space-between;  
-        align-items: center;             
-    }
-
-    .breadcrumb {
-        background-color: transparent;
-        margin-bottom: 0;
+    /* 筛选器样式 */
+    .filter-panel {
+        border-radius: 8px;
+        margin-top: 15px;
     }
     
-    /* 方形分页样式 */
+    .filter-tag {
+        position: relative;
+        display: inline-block;
+    }
+    
+    .filter-remove {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background: #fff;
+        border-radius: 50%;
+        color: #dc3545;
+        font-size: 14px;
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;             
+        justify-content: center;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    .filter-remove:hover {
+        color: #c82333;
+        text-decoration: none;
+        transform: scale(1.1);
+    }
+
+    /* 文章卡片样式 */
+    .hover-shadow {
+        transition: all 0.3s ease;
+    }
+    
+    .hover-shadow:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+    }
+    
+    .hover-shadow-sm:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08) !important;
+    }
+    
+    .article-cover {
+        height: 180px;
+        overflow: hidden;
+        position: relative;
+    }
+    
+    .article-cover img {
+            width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+    
+    .card:hover .article-cover img {
+        transform: scale(1.05);
+    }
+    
+    .article-cover-placeholder {
+        height: 180px;
+    }
+    
+    /* 列表视图样式 */
+    .article-cover-list {
+        min-height: 180px;
+        overflow: hidden;
+    }
+    
+    .object-cover {
+        object-fit: cover;
+    }
+    
+    /* 视图切换按钮样式 */
+    .view-toggle .btn {
+        position: relative;
+        overflow: hidden;
+        transition: all 0.2s ease;
+    }
+    
+    .view-toggle .btn:hover {
+        transform: translateY(-2px);
+    }
+    
+    .view-toggle .btn.active {
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    .view-toggle .btn.active:after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 25%;
+        width: 50%;
+        height: 2px;
+        background-color: #212529;
+    }
+
+    /* 视图切换动画 */
+    .view-transition {
+        transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    
+    .view-transition.fadeout {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    
+    .view-transition.fadein {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    
+    /* 页码样式优化 */
     .pagination .page-link {
         border-radius: 0;
         margin: 0 2px;
         min-width: 40px;
         height: 40px;
-        text-align: center;
-        line-height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         font-weight: 500;
     }
     
     .pagination .page-item.active .page-link {
-        background-color: #fff;
-        color: #000;
-        border: 2px solid #000;
-        font-weight: bold;
+        background-color: #212529;
+        border-color: #212529;
+        color: #fff;
     }
     
-    .pagination .page-link:hover {
-        background-color: #f8f9fa;
-        border-color: #dee2e6;
-        color: #000;
+    .stretched-link::after {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 1;
+        pointer-events: auto;
+        content: "";
+        background-color: rgba(0,0,0,0);
     }
     
-    .pagination .page-item.disabled .page-link {
-        color: #6c757d;
-        pointer-events: none;
-        background-color: #fff;
-        border-color: #dee2e6;
+    /* 搜索框样式 */
+    input[type="text"].form-control {
+        transition: all 0.3s ease;
     }
     
-    @media (max-width: 576px) { 
-        .form-inline input[type="text"] {
-            width: 100%;
-            margin: 10px 0; 
-        }
-        .form-inline .form-control {
-            width: 100%; 
+    input[type="text"].form-control:focus {
+        transform: scale(1.02);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    @media (max-width: 768px) {
+        .article-cover, .article-cover-placeholder, .article-cover-list {
+            height: 150px;
         }
     }
-    @media (max-width: 576px) {
-    .form-inline {
-        width: auto;
-        padding: 0 15px; 
-        }
-    }
-
-
 </style>
 
+<!-- 引入作者名片功能脚本 -->
+<script src="{% static 'js/author-card.js' %}"></script>
+
 {% endblock content %}
+
+{% block script %}
+<script>
+    $(document).ready(function() {
+        console.log("文档已加载，开始设置...");
+        
+        // 筛选器折叠控制
+        $('#filterContent').on('show.bs.collapse', function () {
+            $('#filterToggleIcon').removeClass('fa-chevron-down').addClass('fa-chevron-up');
+        });
+        
+        $('#filterContent').on('hide.bs.collapse', function () {
+            $('#filterToggleIcon').removeClass('fa-chevron-up').addClass('fa-chevron-down');
+        });
+        
+        // 页面跳转脚本
+        $('#pageJumpButton').on('click', function() {
+            const pageNum = parseInt($('#pageJumpInput').val());
+            if (pageNum && pageNum >= 1 && pageNum <= {{ articles.paginator.num_pages|default:1 }}) {
+                window.location.href = "?page=" + pageNum + "&order={{ order }}&search={{ search }}&column={{ column }}&tag={{ tag }}";
+            }
+        });
+        
+        $('#pageJumpInput').on('keypress', function(e) {
+            if (e.key === 'Enter') {
+                $('#pageJumpButton').click();
+            }
+        });
+        
+        // 视图切换功能
+        console.log("设置视图切换...");
+        
+        // 初始化时确保网格视图是默认显示的
+        $('#articleGrid').css('display', 'flex');
+        $('#articleList').css('display', 'none');
+        $('#viewGrid').addClass('active');
+        
+        // 网格视图按钮点击事件
+        $('#viewGrid').on('click', function() {
+            console.log("点击了网格视图按钮");
+            $('#viewGrid').addClass('active');
+            $('#viewList').removeClass('active');
+            
+            // 确保使用正确的CSS显示方式
+            $('#articleGrid').css('display', 'flex');
+            $('#articleList').css('display', 'none');
+            
+            // 保存用户偏好
+            localStorage.setItem('viewMode', 'grid');
+        });
+        
+        // 列表视图按钮点击事件
+        $('#viewList').on('click', function() {
+            console.log("点击了列表视图按钮");
+            $('#viewList').addClass('active');
+            $('#viewGrid').removeClass('active');
+            
+            // 确保正确显示列表视图
+            $('#articleGrid').css('display', 'none');
+            $('#articleList').css('display', 'block');
+            
+            // 保存用户偏好
+            localStorage.setItem('viewMode', 'list');
+        });
+        
+        // 读取用户偏好
+        const savedView = localStorage.getItem('viewMode');
+        console.log("已保存的视图模式:", savedView);
+        
+        if (savedView === 'list') {
+            console.log("应用列表视图模式");
+            $('#viewList').trigger('click');
+        } else {
+            console.log("应用网格视图模式");
+            $('#viewGrid').trigger('click');
+        }
+    });
+</script>
+{% endblock script %}

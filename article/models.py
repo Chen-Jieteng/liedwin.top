@@ -41,7 +41,7 @@ class ArticlePost(models.Model):
 
     updated = models.DateTimeField(auto_now=True)
 
-    editor_type = models.CharField(max_length=1500, default='markdown')
+    editor_type = models.CharField(max_length=1500, default='ckeditor')
 
 
     class Meta:

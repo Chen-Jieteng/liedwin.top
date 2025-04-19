@@ -1,105 +1,184 @@
 {% extends "base.html" %} {% load static %}
 {% block title %} 更新文章 {% endblock title %}
 {% block content %}
-<div class="container">
-    <div class="row">
-        <div class="col-12">
-            <br>
-            <form method="post" action="." enctype="multipart/form-data">
-                <div class="form-group">
-                    <label for="title">文章标题</label>
-                    <input type="text" class="form-control" id="title" name="title" value="{{ article.title }}">
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h4 class="mb-0 py-2"><i class="fas fa-edit mr-2"></i>编辑文章</h4>
                 </div>
+                <div class="card-body">
+                    <form method="post" action="." enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <!-- 文章封面 -->
+                        <div class="form-group">
+                            <label class="font-weight-bold"><i class="fas fa-image mr-1"></i>文章封面</label>
+                            <div class="custom-file mb-2">
+                                <input type="file" class="custom-file-input" id="avatar" name="avatar" accept="image/*">
+                                <label class="custom-file-label" for="avatar">
+                                    {% if article.avatar %}
+                                        当前封面: {{ article.avatar.name|slice:"14:" }}
+                                    {% else %}
+                                        选择封面图片...
+                                    {% endif %}
+                                </label>
+                            </div>
+                            <!-- 图片预览区域 -->
+                            <div id="cover-preview" class="mt-3 text-center" style="display: {% if article.avatar %}block{% else %}none{% endif %};">
+                                <img id="cover-preview-image" class="img-fluid rounded shadow-sm" 
+                                     style="max-height: 300px;" 
+                                     src="{% if article.avatar %}{{ article.avatar.url }}{% endif %}" 
+                                     alt="封面预览">
+                                <button type="button" class="btn btn-sm btn-outline-danger mt-2" id="remove-cover">
+                                    <i class="fas fa-times mr-1"></i>移除图片
+                                </button>
+                            </div>
+                            <small class="form-text text-muted">推荐使用宽高比为16:9的图片，最佳尺寸1200*675px</small>
+                        </div>
 
-                <!-- 文章栏目 -->
-                <div class="form-group">
-                    <label for="column">栏目</label>
-                    <select class="form-control" 
-                            id="column" 
-                            name="column"
-                    >
-                            <option value="none">请选择栏目..</option>
-                        {% for column in columns %}
-                            <option value="{{ column.id }}"
-                                {% if column.id == article.column.id %}
-                                    selected
-                                {% endif %}
+                        <!-- 文章标题 -->
+                        <div class="form-group mt-4">
+                            <label for="title" class="font-weight-bold"><i class="fas fa-heading mr-1"></i>文章标题</label>
+                            <input type="text" 
+                                class="form-control form-control-lg shadow-sm" 
+                                id="title" 
+                                name="title" 
+                                value="{{ article.title }}"
+                                required
                             >
-                                {{ column }}
-                            </option>
-                        {% endfor %}
-                    </select>
-                </div>
+                        </div>
 
-                <div class="form-group">
-                    <button type="button" class="btn btn-secondary" id="switch-to-ckeditor">使用 CKEditor</button>
-                    <button type="button" class="btn btn-secondary" id="switch-to-markdown">使用 Markdown</button>
-                </div>
-                
-                <input type="hidden" id="editor_type" name="editor_type" value="{{ article.editor_type|default:"markdown" }}">
+                        <!-- 栏目选择 -->
+                        <div class="form-group mt-4">
+                            <label for="column" class="font-weight-bold"><i class="fas fa-columns mr-1"></i>文章栏目</label>
+                            <select class="form-control shadow-sm" id="column" name="column">
+                                <option value="none">不分类</option>
+                                {% for column in columns %}
+                                <option value="{{ column.id }}"
+                                    {% if column.id == article.column.id %}
+                                        selected
+                                    {% endif %}
+                                >
+                                    {{ column.title }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <!-- 文章标签 -->
+                        <div class="form-group mt-4">
+                            <label for="tags" class="font-weight-bold"><i class="fas fa-tags mr-1"></i>文章标签</label>
+                            <input type="text" 
+                                class="form-control shadow-sm" 
+                                id="tags" 
+                                name="tags" 
+                                value="{{ tags }}"
+                                placeholder="输入标签，用逗号分隔"
+                            >
+                            <small class="form-text text-muted">多个标签请用英文逗号（,）分隔</small>
+                        </div>
 
-                <!-- 文章标题图 -->
-                <div class="form-group">
-                   <label for="avatar">标题图</label>
-                   <input type="file" class="form-control-file" name="avatar" id="avatar">
-                </div>
+                        <!-- 文章正文 -->
+                        <div class="form-group mt-4">
+                            <label for="body" class="font-weight-bold"><i class="fas fa-file-alt mr-1"></i>文章正文</label>
+                            <div class="alert alert-light bg-light border">
+                                <i class="fas fa-info-circle text-primary mr-1"></i>
+                                您可以使用富文本编辑器添加文章内容，包括图片、链接、表格等
+                                <div class="mt-2">
+                                    <strong>如何创建目录：</strong>
+                                    <ol class="mb-0 pl-3 mt-1">
+                                        <li>使用"格式"下拉菜单为内容添加标题（H1-H6）</li>
+                                        <li>系统将自动根据标题生成文章目录</li>
+                                        <li>请确保文章结构清晰，使用合适的标题层级</li>
+                                    </ol>
+                                </div>
+                            </div>
+                            
+                            <!-- 编辑器容器 -->
+                            <div id="editor-container" class="editor-container">
+                                {{ form.media }}
+                                {{ form.body }}
+                            </div>
+                        </div>
 
-                <!-- 文章标签-->
-                <div class="form-group">
-                     <label for="tags">标签</label>
-                     <input type="text" class="form-control col-3" id="tags" name="tags"
-                        value="{{ tags }}">
+                        <!-- 提交按钮 -->
+                        <div class="mt-5 text-right">
+                            <a href="{% url 'article:article_detail' article.id %}" class="btn btn-light mr-2">
+                                <i class="fas fa-times mr-1"></i>取消
+                            </a>
+                            <button type="submit" class="btn btn-primary shadow-sm">
+                                <i class="fas fa-save mr-1"></i>保存修改
+                            </button>
+                        </div>
+                    </form>
                 </div>
-
-                <!-- 文章正文 -->
-                <div class="form-group">
-                    <label for="body">文章正文</label>
-                    <!-- 文本域不需要 value 属性，直接在标签体中嵌入数据即可 -->
-                    <textarea type="text" class="form-control" id="body" name="body" rows="12">{{ article.body }}</textarea>
-                </div>
-
-                <!-- 提交按钮 -->
-                <button type="submit" class="btn btn-primary">完成</button>
-            </form>
+            </div>
         </div>
     </div>
 </div>
 
+{% block script %}
+<!-- 引入必要的脚本 -->
 <script src="{% static 'ckeditor/ckeditor.js' %}"></script>
-<script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
+<script src="{% static 'js/ckeditor_config.js' %}"></script>
 
 <script>
-    let editorType = '{{ article.editor_type|default:"markdown" }}';
-    let simplemde = null;
-
-    if (editorType === 'ckeditor') {
-        CKEDITOR.replace('body');
-    } else {
-        simplemde = new SimpleMDE({ element: document.getElementById("body") });
-    }
-
-    document.getElementById('switch-to-ckeditor').addEventListener('click', function() {
-        if (editorType !== 'ckeditor') {
-            if (simplemde) {
-                simplemde.toTextArea();
-                simplemde = null;
+    // 文件上传控件显示文件名
+    document.querySelector('.custom-file-input').addEventListener('change', function(e) {
+        // 显示文件名
+        var fileName = e.target.files[0] ? e.target.files[0].name : '选择封面图片...';
+        var nextSibling = e.target.nextElementSibling;
+        nextSibling.innerText = fileName;
+        
+        // 图片预览
+        var preview = document.getElementById('cover-preview');
+        var previewImg = document.getElementById('cover-preview-image');
+        
+        if (e.target.files && e.target.files[0]) {
+            var reader = new FileReader();
+            
+            reader.onload = function(e) {
+                previewImg.src = e.target.result;
+                preview.style.display = 'block';
             }
-            CKEDITOR.replace('body');
-            editorType = 'ckeditor';
-            document.getElementById('editor_type').value = 'ckeditor';
+            
+            reader.readAsDataURL(e.target.files[0]);
+        } else {
+            // 如果没有选择新图片且没有已有图片，隐藏预览
+            if (!previewImg.getAttribute('data-has-image')) {
+                preview.style.display = 'none';
+            }
         }
     });
-
-    document.getElementById('switch-to-markdown').addEventListener('click', function() {
-        if (editorType !== 'markdown') {
-            if (CKEDITOR.instances.body) {
-                CKEDITOR.instances.body.destroy();
-            }
-            simplemde = new SimpleMDE({ element: document.getElementById("body") });
-            editorType = 'markdown';
-            document.getElementById('editor_type').value = 'markdown';
+    
+    // 移除图片预览
+    document.getElementById('remove-cover').addEventListener('click', function() {
+        var fileInput = document.getElementById('avatar');
+        var preview = document.getElementById('cover-preview');
+        var previewImg = document.getElementById('cover-preview-image');
+        var fileLabel = document.querySelector('.custom-file-label');
+        
+        fileInput.value = '';
+        preview.style.display = 'none';
+        fileLabel.innerText = '选择封面图片...';
+        
+        // 添加一个隐藏的输入字段，表示要删除当前图片
+        if (!document.getElementById('remove_avatar')) {
+            var input = document.createElement('input');
+            input.type = 'hidden';
+            input.id = 'remove_avatar';
+            input.name = 'remove_avatar';
+            input.value = 'true';
+            fileInput.parentNode.appendChild(input);
         }
     });
+    
+    // 记录是否有现有图片
+    {% if article.avatar %}
+    document.getElementById('cover-preview-image').setAttribute('data-has-image', 'true');
+    {% endif %}
 </script>
+{% endblock script %}
 {% endblock content %}

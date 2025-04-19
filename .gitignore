@@ -16,6 +16,7 @@ ENV/
 # 数据库
 *.sqlite3
 *.sqlite3-journal
+* db.sqlite3
 
 # 日志文件
 *.log

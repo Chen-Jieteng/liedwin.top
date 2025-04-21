@@ -148,9 +148,10 @@ def article_create(request):
         if article_post_form.is_valid():
             # 保存数据，但暂时不提交到数据库中
             new_article = article_post_form.save(commit=False)
-            # 指定数据库中 id=1 的用户为作者
-            # 如果你进行过删除数据表的操作，可能会找不到id=1的用户
-            # 此时请重新创建用户，并传入此用户的id
+            # 指定栏目
+            if request.POST['column'] != 'none':
+                new_article.column = ArticleColumn.objects.get(id=request.POST['column'])
+            # 指定作者
             new_article.author = request.user
             # 将新文章保存到数据库中
             new_article.save()
@@ -165,8 +166,13 @@ def article_create(request):
     else:
         # 创建表单类实例
         article_post_form = ArticlePostForm(user=request.user)
+        # 获取所有栏目
+        columns = ArticleColumn.objects.all()
         # 赋值上下文
-        context = { 'article_post_form': article_post_form }
+        context = { 
+            'article_post_form': article_post_form,
+            'columns': columns 
+        }
         # 返回模板
         return render(request, 'article/create.html', context)
 
@@ -222,7 +228,15 @@ def article_update(request, id):
         # 判断提交的数据是否满足模型的要求
         if article_post_form.is_valid():
             # 保存新写入的 title、body 数据并保存
-            article = article_post_form.save()
+            article = article_post_form.save(commit=False)
+            # 更新栏目
+            if request.POST['column'] != 'none':
+                article.column = ArticleColumn.objects.get(id=request.POST['column'])
+            else:
+                article.column = None
+            article.save()
+            # 保存标签的多对多关系
+            article_post_form.save_m2m()
             # 完成后返回到修改后的文章中。需传入文章的 id 值
             return redirect("article:article_detail", id=id)
         # 如果数据不合法，返回错误信息
@@ -233,10 +247,14 @@ def article_update(request, id):
     else:
         # 创建表单类实例
         article_post_form = ArticlePostForm(instance=article, user=request.user)
+        # 获取所有栏目
+        columns = ArticleColumn.objects.all()
         # 赋值上下文，将 article 文章对象也传递进去，以便提取旧的内容
         context = { 
             'article': article, 
             'article_post_form': article_post_form,
+            'columns': columns,
+            'tags': ','.join([x for x in article.tags.names()]),
         }
         # 将响应返回到模板中
         return render(request, 'article/update.html', context)

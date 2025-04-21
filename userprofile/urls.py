@@ -1,5 +1,7 @@
 from django.urls import path
 from . import views
+from django.conf import settings
+from django.conf.urls.static import static
 
 app_name = 'userprofile'
 
@@ -19,4 +21,6 @@ urlpatterns = [
     path('cv/<int:id>/', views.user_cv, name='cv_with_id'),
     # 用户统计信息API
     path('api/stats/<int:id>/', views.user_stats_api, name='user_stats_api'),
+    # 会话状态检查API
+    path('check-auth/', views.check_auth, name='check_auth'),
 ]

@@ -14,6 +14,18 @@ from .models import Profile
 # 导入文章模型
 from article.models import ArticlePost
 
+# 会话状态检查
+def check_auth(request):
+    """
+    简单的会话状态检查，用于前端验证用户是否已登录
+    如果用户已登录，返回200状态码
+    如果用户未登录，返回403状态码
+    """
+    if request.user.is_authenticated:
+        return HttpResponse("Authenticated", status=200)
+    else:
+        return HttpResponse("Not authenticated", status=403)
+
 # 个人CV视图
 def user_cv(request, id=None):
     """
@@ -21,6 +33,9 @@ def user_cv(request, id=None):
     如果id为None，则显示当前登录用户的CV
     如果未登录且id为None，则显示默认CV（站长的CV）
     """
+    # 确保使用最新的请求状态检查认证
+    request.user = request._request.user if hasattr(request, '_request') else request.user
+    
     # 确定要显示的用户
     if id is not None:
         try:

@@ -2311,8 +2311,25 @@
 
 {% block script %}
 <script>
-    // 显示智能客服组件，仅在CV页面
+    // 刷新会话状态 - 确保CV页面与网站其余部分保持同步
     document.addEventListener('DOMContentLoaded', function() {
+        // 发送一个请求到服务器检查登录状态
+        fetch('/userprofile/check-auth/', {
+            method: 'GET',
+            credentials: 'same-origin', // 包含cookie
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => {
+            if (response.status === 403) {
+                // 如果返回403，表示用户已登出，刷新页面
+                window.location.reload();
+            }
+        })
+        .catch(error => console.error('Authentication check failed:', error));
+        
+        // 显示智能客服组件，仅在CV页面
         console.log("CV页面加载完成，初始化智能客服...");
         
         // 显示HR引导模态框

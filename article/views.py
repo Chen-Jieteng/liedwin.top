@@ -21,9 +21,15 @@ def article_list(request):
     order = request.GET.get('order')
     column = request.GET.get('column')
     tag = request.GET.get('tag')
+    draft = request.GET.get('draft')
 
     # 初始化查询集
-    article_list = ArticlePost.objects.all()
+    if draft == 'true' and request.user.is_authenticated:
+        # 只有登录用户可以查看自己的草稿
+        article_list = ArticlePost.objects.filter(author=request.user, is_draft=True)
+    else:
+        # 默认只显示非草稿文章
+        article_list = ArticlePost.objects.filter(is_draft=False)
 
     # 搜索查询集
     if search:
@@ -86,6 +92,7 @@ def article_list(request):
         'tag': tag,
         'all_columns': all_columns,
         'hot_tags': hot_tags,
+        'draft': draft,
     }
     # render函数：载入模板，并返回context对象
     return render(request, 'article/list.html', context)
@@ -153,6 +160,11 @@ def article_create(request):
                 new_article.column = ArticleColumn.objects.get(id=request.POST['column'])
             # 指定作者
             new_article.author = request.user
+            
+            # 判断是否为草稿
+            if 'save_draft' in request.POST:
+                new_article.is_draft = True
+            
             # 将新文章保存到数据库中
             new_article.save()
             # 保存 tags 的多对多关系
@@ -234,6 +246,13 @@ def article_update(request, id):
                 article.column = ArticleColumn.objects.get(id=request.POST['column'])
             else:
                 article.column = None
+                
+            # 判断是否为草稿
+            if 'save_draft' in request.POST:
+                article.is_draft = True
+            else:
+                article.is_draft = False
+                
             article.save()
             # 保存标签的多对多关系
             article_post_form.save_m2m()

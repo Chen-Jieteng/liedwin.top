@@ -42,7 +42,9 @@ class ArticlePost(models.Model):
     updated = models.DateTimeField(auto_now=True)
 
     editor_type = models.CharField(max_length=1500, default='ckeditor')
-
+    
+    # 是否为草稿
+    is_draft = models.BooleanField(default=False, verbose_name='是否草稿')
 
     class Meta:
         ordering = ('-created',)

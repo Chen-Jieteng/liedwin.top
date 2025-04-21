@@ -6,7 +6,14 @@
         <div class="col-lg-10">
             <div class="card shadow-sm">
                 <div class="card-header bg-white">
-                    <h4 class="mb-0 py-2"><i class="fas fa-edit mr-2"></i>编辑文章</h4>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0 py-2">
+                            <i class="fas fa-edit mr-2"></i>编辑文章
+                        </h4>
+                        <a href="{% url 'article:article_detail' article.id %}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-eye mr-1"></i>查看文章
+                        </a>
+                    </div>
                 </div>
                 <div class="card-body">
                     <form method="post" action="." enctype="multipart/form-data">
@@ -14,50 +21,79 @@
                         
                         <!-- 文章封面 -->
                         <div class="form-group">
-                            <label class="font-weight-bold"><i class="fas fa-image mr-1"></i>文章封面</label>
+                            <label for="avatar" class="font-weight-bold">
+                                <i class="fas fa-image mr-1"></i>文章封面
+                                <span class="badge badge-pill badge-light ml-1">可选</span>
+                            </label>
+                            
+                            <!-- 当前封面预览（如果存在） -->
+                            {% if article.avatar %}
+                            <div class="current-cover mb-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="mr-3">
+                                        <span class="badge badge-pill badge-primary">当前封面</span>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <img src="{{ article.avatar.url }}" class="img-fluid rounded shadow-sm" style="max-height: 150px;" alt="当前封面">
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            <!-- 上传新封面 -->
                             <div class="custom-file mb-2">
                                 <input type="file" class="custom-file-input" id="avatar" name="avatar" accept="image/*">
-                                <label class="custom-file-label" for="avatar">
-                                    {% if article.avatar %}
-                                        当前封面: {{ article.avatar.name|slice:"14:" }}
-                                    {% else %}
-                                        选择封面图片...
-                                    {% endif %}
-                                </label>
+                                <label class="custom-file-label" for="avatar">选择新封面图片...</label>
                             </div>
-                            <!-- 图片预览区域 -->
-                            <div id="cover-preview" class="mt-3 text-center" style="display: {% if article.avatar %}block{% else %}none{% endif %};">
-                                <img id="cover-preview-image" class="img-fluid rounded shadow-sm" 
-                                     style="max-height: 300px;" 
-                                     src="{% if article.avatar %}{{ article.avatar.url }}{% endif %}" 
-                                     alt="封面预览">
+                            
+                            <!-- 新图片预览区域 -->
+                            <div id="cover-preview" class="mt-3 text-center" style="display: none;">
+                                <div class="d-flex align-items-center">
+                                    <div class="mr-3">
+                                        <span class="badge badge-pill badge-success">新封面</span>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <img id="cover-preview-image" class="img-fluid rounded shadow-sm" style="max-height: 150px;" alt="新封面预览">
+                                    </div>
+                                </div>
                                 <button type="button" class="btn btn-sm btn-outline-danger mt-2" id="remove-cover">
-                                    <i class="fas fa-times mr-1"></i>移除图片
+                                    <i class="fas fa-times mr-1"></i>取消选择
                                 </button>
                             </div>
-                            <small class="form-text text-muted">推荐使用宽高比为16:9的图片，最佳尺寸1200*675px</small>
+                            
+                            <small class="form-text text-muted mt-2">
+                                <i class="fas fa-info-circle mr-1"></i>为保持网站风格一致，推荐使用宽高比为16:9的图片，最佳尺寸1200*675px
+                            </small>
                         </div>
 
                         <!-- 文章标题 -->
                         <div class="form-group mt-4">
-                            <label for="title" class="font-weight-bold"><i class="fas fa-heading mr-1"></i>文章标题</label>
+                            <label for="title" class="font-weight-bold">
+                                <i class="fas fa-heading mr-1"></i>文章标题
+                            </label>
                             <input type="text" 
                                 class="form-control form-control-lg shadow-sm" 
                                 id="title" 
-                                name="title" 
-                                value="{{ article.title }}"
+                                name="title"
+                                value="{{ article.title }}" 
                                 required
                             >
                         </div>
 
-                        <!-- 栏目选择 -->
+                        <!-- 栏目 -->
                         <div class="form-group mt-4">
-                            <label for="column" class="font-weight-bold"><i class="fas fa-columns mr-1"></i>文章栏目</label>
-                            <select class="form-control shadow-sm" id="column" name="column">
-                                <option value="none">不分类</option>
+                            <label for="column" class="font-weight-bold">
+                                <i class="fas fa-columns mr-1"></i>文章栏目
+                            </label>
+                            <select 
+                                class="form-control shadow-sm" 
+                                id="column" 
+                                name="column"
+                            >
+                                <option value="none" {% if not article.column %}selected{% endif %}>不分类</option>
                                 {% for column in columns %}
-                                <option value="{{ column.id }}"
-                                    {% if column.id == article.column.id %}
+                                <option value="{{ column.id }}" 
+                                    {% if article.column.id == column.id %}
                                         selected
                                     {% endif %}
                                 >
@@ -66,23 +102,51 @@
                                 {% endfor %}
                             </select>
                         </div>
-                        
-                        <!-- 文章标签 -->
+
+                        <!-- 标签 -->
                         <div class="form-group mt-4">
-                            <label for="tags" class="font-weight-bold"><i class="fas fa-tags mr-1"></i>文章标签</label>
+                            <label for="tags" class="font-weight-bold">
+                                <i class="fas fa-tags mr-1"></i>文章标签
+                            </label>
                             <input type="text" 
                                 class="form-control shadow-sm" 
                                 id="tags" 
-                                name="tags" 
+                                name="tags"
                                 value="{{ tags }}"
-                                placeholder="输入标签，用逗号分隔"
                             >
                             <small class="form-text text-muted">多个标签请用英文逗号（,）分隔</small>
                         </div>
 
+                        <!-- 管理员发布时间设置 -->
+                        {% if user.is_superuser %}
+                        <div class="form-group mt-4">
+                            <label class="font-weight-bold">
+                                <i class="fas fa-calendar-alt mr-1"></i>发布时间设置
+                                <span class="badge badge-pill badge-primary ml-1">管理员专属</span>
+                            </label>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label for="created_date">发布日期</label>
+                                    <input type="date" class="form-control" id="created_date" name="created_date" value="{{ article_post_form.created_date.initial|date:'Y-m-d' }}">
+                                    <small class="form-text text-muted">{{ article_post_form.created_date.help_text }}</small>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="created_time">发布时间</label>
+                                    <input type="time" class="form-control" id="created_time" name="created_time" value="{{ article_post_form.created_time.initial|time:'H:i' }}">
+                                    <small class="form-text text-muted">{{ article_post_form.created_time.help_text }}</small>
+                                </div>
+                            </div>
+                            <div class="mt-2">
+                                <span class="badge badge-secondary">原始发布：{{ article.created|date:"Y年m月d日 H:i" }}</span>
+                            </div>
+                        </div>
+                        {% endif %}
+
                         <!-- 文章正文 -->
                         <div class="form-group mt-4">
-                            <label for="body" class="font-weight-bold"><i class="fas fa-file-alt mr-1"></i>文章正文</label>
+                            <label for="id_body" class="font-weight-bold">
+                                <i class="fas fa-file-alt mr-1"></i>文章正文
+                            </label>
                             <div class="alert alert-light bg-light border">
                                 <i class="fas fa-info-circle text-primary mr-1"></i>
                                 您可以使用富文本编辑器添加文章内容，包括图片、链接、表格等
@@ -97,9 +161,9 @@
                             </div>
                             
                             <!-- 编辑器容器 -->
-                            <div id="editor-container" class="editor-container">
-                                {{ form.media }}
-                                {{ form.body }}
+                            <div class="editor-container">
+                                {{ article_post_form.media }}
+                                {{ article_post_form.body }}
                             </div>
                         </div>
 
@@ -119,16 +183,16 @@
     </div>
 </div>
 
-{% block script %}
-<!-- 引入必要的脚本 -->
-<script src="{% static 'ckeditor/ckeditor.js' %}"></script>
+<!-- 引入自定义脚本以增强交互体验 -->
+<script src="{% static 'ckeditor/ckeditor/ckeditor.js' %}"></script>
 <script src="{% static 'js/ckeditor_config.js' %}"></script>
-
+<script src="{% static 'js/ckeditor_image_fix.js' %}"></script>
+<script src="{% static 'js/disable_ckeditor_maximize.js' %}"></script>
 <script>
-    // 文件上传控件显示文件名
+    // 为文件上传控件添加显示文件名的功能
     document.querySelector('.custom-file-input').addEventListener('change', function(e) {
         // 显示文件名
-        var fileName = e.target.files[0] ? e.target.files[0].name : '选择封面图片...';
+        var fileName = e.target.files[0] ? e.target.files[0].name : '选择新封面图片...';
         var nextSibling = e.target.nextElementSibling;
         nextSibling.innerText = fileName;
         
@@ -146,10 +210,7 @@
             
             reader.readAsDataURL(e.target.files[0]);
         } else {
-            // 如果没有选择新图片且没有已有图片，隐藏预览
-            if (!previewImg.getAttribute('data-has-image')) {
-                preview.style.display = 'none';
-            }
+            preview.style.display = 'none';
         }
     });
     
@@ -157,28 +218,20 @@
     document.getElementById('remove-cover').addEventListener('click', function() {
         var fileInput = document.getElementById('avatar');
         var preview = document.getElementById('cover-preview');
-        var previewImg = document.getElementById('cover-preview-image');
         var fileLabel = document.querySelector('.custom-file-label');
         
         fileInput.value = '';
         preview.style.display = 'none';
-        fileLabel.innerText = '选择封面图片...';
-        
-        // 添加一个隐藏的输入字段，表示要删除当前图片
-        if (!document.getElementById('remove_avatar')) {
-            var input = document.createElement('input');
-            input.type = 'hidden';
-            input.id = 'remove_avatar';
-            input.name = 'remove_avatar';
-            input.value = 'true';
-            fileInput.parentNode.appendChild(input);
+        fileLabel.innerText = '选择新封面图片...';
+    });
+
+    // 追加脚本，确保CKEditor实例的textarea有正确的ID
+    document.addEventListener('DOMContentLoaded', function() {
+        // 查找CKEditor的textarea，确保它有正确的ID
+        var bodyTextarea = document.querySelector('textarea[name="body"]');
+        if (bodyTextarea && !bodyTextarea.id) {
+            bodyTextarea.id = 'id_body';
         }
     });
-    
-    // 记录是否有现有图片
-    {% if article.avatar %}
-    document.getElementById('cover-preview-image').setAttribute('data-has-image', 'true');
-    {% endif %}
 </script>
-{% endblock script %}
-{% endblock content %}
+{% endblock %}

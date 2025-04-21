@@ -143,20 +143,15 @@ def article_create(request):
     # 判断用户是否提交数据
     if request.method == "POST":
         # 将提交的数据赋值到表单实例中
-        article_post_form = ArticlePostForm(request.POST, request.FILES)
+        article_post_form = ArticlePostForm(request.POST, request.FILES, user=request.user)
         # 判断提交的数据是否满足模型的要求
         if article_post_form.is_valid():
             # 保存数据，但暂时不提交到数据库中
             new_article = article_post_form.save(commit=False)
-            # 指定登录的用户为作者
-            new_article.author = User.objects.get(id=request.user.id)
-            if request.POST['column'] != 'none':
-                # 保存文章栏目
-                new_article.column = ArticleColumn.objects.get(id=request.POST['column'])
-            
-            # 设置编辑器类型为CKEditor
-            new_article.editor_type = 'ckeditor'
-            
+            # 指定数据库中 id=1 的用户为作者
+            # 如果你进行过删除数据表的操作，可能会找不到id=1的用户
+            # 此时请重新创建用户，并传入此用户的id
+            new_article.author = request.user
             # 将新文章保存到数据库中
             new_article.save()
             # 保存 tags 的多对多关系
@@ -169,11 +164,9 @@ def article_create(request):
     # 如果用户请求获取数据
     else:
         # 创建表单类实例
-        article_post_form = ArticlePostForm()
-        # 文章栏目
-        columns = ArticleColumn.objects.all()
+        article_post_form = ArticlePostForm(user=request.user)
         # 赋值上下文
-        context = { 'form': article_post_form, 'columns': columns }
+        context = { 'article_post_form': article_post_form }
         # 返回模板
         return render(request, 'article/create.html', context)
 
@@ -218,43 +211,18 @@ def article_update(request, id):
     # 获取需要修改的具体文章对象
     article = ArticlePost.objects.get(id=id)
 
-    # 过滤非作者的用户
-    if request.user != article.author:
+    # 过滤非作者的用户（管理员除外）
+    if request.user != article.author and not request.user.is_superuser:
         return HttpResponse("抱歉，你无权修改这篇文章。")
 
     # 判断用户是否为 POST 提交表单数据
     if request.method == "POST":
         # 将提交的数据赋值到表单实例中
-        article_post_form = ArticlePostForm(data=request.POST, files=request.FILES, instance=article)
+        article_post_form = ArticlePostForm(data=request.POST, files=request.FILES, instance=article, user=request.user)
         # 判断提交的数据是否满足模型的要求
         if article_post_form.is_valid():
-            # 保存文章
-            article = article_post_form.save(commit=False)
-            
-            if request.POST['column'] != 'none':
-                # 保存文章栏目
-                article.column = ArticleColumn.objects.get(id=request.POST['column'])
-            else:
-                article.column = None
-
-            # 设置编辑器类型为CKEditor
-            article.editor_type = 'ckeditor'
-                
-            # 检查是否要移除封面图片
-            if 'remove_avatar' in request.POST and request.POST['remove_avatar'] == 'true':
-                article.avatar = None
-                
-            # 保存文章
-            article.save()
-            
-            # 保存标签
-            if 'tags' in request.POST and request.POST['tags']:
-                # 拆分标签并移除空白
-                tags = [tag.strip() for tag in request.POST['tags'].split(',') if tag.strip()]
-                article.tags.clear()  # 先清除已有标签
-                for tag in tags:
-                    article.tags.add(tag)  # 逐个添加新标签
-                
+            # 保存新写入的 title、body 数据并保存
+            article = article_post_form.save()
             # 完成后返回到修改后的文章中。需传入文章的 id 值
             return redirect("article:article_detail", id=id)
         # 如果数据不合法，返回错误信息
@@ -264,18 +232,12 @@ def article_update(request, id):
     # 如果用户 GET 请求获取数据
     else:
         # 创建表单类实例
-        article_post_form = ArticlePostForm(instance=article)
-
-        # 文章栏目
-        columns = ArticleColumn.objects.all()
+        article_post_form = ArticlePostForm(instance=article, user=request.user)
         # 赋值上下文，将 article 文章对象也传递进去，以便提取旧的内容
         context = { 
             'article': article, 
-            'form': article_post_form,
-            'columns': columns,
-            'tags': ','.join([x for x in article.tags.names()]),
+            'article_post_form': article_post_form,
         }
-
         # 将响应返回到模板中
         return render(request, 'article/update.html', context)
 

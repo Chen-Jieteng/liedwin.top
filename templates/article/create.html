@@ -17,11 +17,17 @@
 
                         <!-- 文章封面 -->
                         <div class="form-group">
-                            <label class="font-weight-bold"><i class="fas fa-image mr-1"></i>文章封面</label>
+                            <label for="avatar" class="font-weight-bold">
+                                <i class="fas fa-image mr-1"></i>文章封面
+                                <span class="badge badge-pill badge-light ml-1">可选</span>
+                            </label>
+                            
+                            <!-- 上传封面 -->
                             <div class="custom-file mb-2">
                                 <input type="file" class="custom-file-input" id="avatar" name="avatar" accept="image/*">
                                 <label class="custom-file-label" for="avatar">选择封面图片...</label>
                             </div>
+                            
                             <!-- 图片预览区域 -->
                             <div id="cover-preview" class="mt-3 text-center" style="display: none;">
                                 <img id="cover-preview-image" class="img-fluid rounded shadow-sm" style="max-height: 300px;" alt="封面预览">
@@ -29,7 +35,10 @@
                                     <i class="fas fa-times mr-1"></i>移除图片
                                 </button>
                             </div>
-                            <small class="form-text text-muted">推荐使用宽高比为16:9的图片，最佳尺寸1200*675px</small>
+                            
+                            <small class="form-text text-muted mt-2">
+                                <i class="fas fa-info-circle mr-1"></i>为保持网站风格一致，推荐使用宽高比为16:9的图片，最佳尺寸1200*675px
+                            </small>
                         </div>
 
                         <!-- 文章标题 -->
@@ -67,12 +76,36 @@
                             <small class="form-text text-muted">多个标签请用英文逗号（,）分隔</small>
                         </div>
 
+                        <!-- 发布时间设置（仅管理员可见） -->
+                        {% if user.is_superuser %}
+                        <div class="form-group mt-4">
+                            <label class="font-weight-bold">
+                                <i class="fas fa-calendar-alt mr-1"></i>发布时间设置
+                                <span class="badge badge-pill badge-primary ml-1">管理员专属</span>
+                            </label>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label for="created_date">发布日期</label>
+                                    <input type="date" class="form-control" id="created_date" name="created_date">
+                                    <small class="form-text text-muted">{{ article_post_form.created_date.help_text }}</small>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="created_time">发布时间</label>
+                                    <input type="time" class="form-control" id="created_time" name="created_time">
+                                    <small class="form-text text-muted">{{ article_post_form.created_time.help_text }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
                         <!-- 文章正文 -->
                         <div class="form-group mt-4">
-                            <label for="body" class="font-weight-bold"><i class="fas fa-file-alt mr-1"></i>文章正文</label>
+                            <label for="id_body" class="font-weight-bold">
+                                <i class="fas fa-file-alt mr-1"></i>文章正文
+                            </label>
                             <div class="alert alert-light bg-light border">
                                 <i class="fas fa-info-circle text-primary mr-1"></i>
-                                您可以使用富文本编辑器添加文章内容，包括图片、链接、表格等。
+                                您可以使用富文本编辑器添加文章内容，包括图片、链接、表格等
                                 <div class="mt-2">
                                     <strong>如何创建目录：</strong>
                                     <ol class="mb-0 pl-3 mt-1">
@@ -82,10 +115,11 @@
                                     </ol>
                                 </div>
                             </div>
-                            <!-- CKEditor富文本编辑器 -->
+                            
+                            <!-- 编辑器容器 -->
                             <div class="editor-container">
-                                {{ form.media }}
-                                {{ form.body }}
+                                {{ article_post_form.media }}
+                                {{ article_post_form.body }}
                             </div>
                         </div>
 
@@ -106,8 +140,10 @@
 </div>
 
 <!-- 引入自定义脚本以增强交互体验 -->
-<script src="{% static 'ckeditor/ckeditor.js' %}"></script>
+<script src="{% static 'ckeditor/ckeditor/ckeditor.js' %}"></script>
 <script src="{% static 'js/ckeditor_config.js' %}"></script>
+<script src="{% static 'js/ckeditor_image_fix.js' %}"></script>
+<script src="{% static 'js/disable_ckeditor_maximize.js' %}"></script>
 <script>
     // 为文件上传控件添加显示文件名的功能
     document.querySelector('.custom-file-input').addEventListener('change', function(e) {
@@ -143,6 +179,14 @@
         fileInput.value = '';
         preview.style.display = 'none';
         fileLabel.innerText = '选择封面图片...';
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // 查找CKEditor的textarea，确保它有正确的ID
+        var bodyTextarea = document.querySelector('textarea[name="body"]');
+        if (bodyTextarea && !bodyTextarea.id) {
+            bodyTextarea.id = 'id_body';
+        }
     });
 </script>
 {% endblock %}

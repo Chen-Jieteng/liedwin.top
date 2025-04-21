@@ -14,6 +14,105 @@ from .models import Profile
 # 导入文章模型
 from article.models import ArticlePost
 
+# 个人CV视图
+def user_cv(request, id=None):
+    """
+    显示用户的简历CV页面，带有树形结构展示
+    如果id为None，则显示当前登录用户的CV
+    """
+    # 确定要显示的用户
+    if id is not None:
+        try:
+            user = User.objects.get(id=id)
+        except User.DoesNotExist:
+            return HttpResponse("该用户不存在")
+    elif request.user.is_authenticated:
+        user = request.user
+    else:
+        return redirect("userprofile:login")
+    
+    # 获取用户资料
+    if Profile.objects.filter(user=user).exists():
+        profile = Profile.objects.get(user=user)
+    else:
+        profile = Profile.objects.create(user=user)
+    
+    # 准备简历数据（树结构）
+    cv_data = {
+        # 示例数据结构，实际应该从数据库或配置中获取
+        'education': [
+            {
+                'degree': '硕士学位',
+                'school': 'XX大学',
+                'major': '计算机科学',
+                'time': '2018-2021',
+                'children': []
+            },
+            {
+                'degree': '学士学位',
+                'school': 'YY大学',
+                'major': '软件工程',
+                'time': '2014-2018',
+                'children': []
+            }
+        ],
+        'experience': [
+            {
+                'position': '高级开发工程师',
+                'company': 'ABC科技有限公司',
+                'time': '2021-至今',
+                'description': '负责后端系统架构设计和开发',
+                'children': [
+                    {
+                        'project': '企业管理系统',
+                        'role': '技术负责人',
+                        'time': '2022-2023',
+                        'description': '设计并实现了基于Django的企业管理平台'
+                    },
+                    {
+                        'project': '数据分析平台',
+                        'role': '后端开发',
+                        'time': '2021-2022',
+                        'description': '负责数据处理管道和API设计'
+                    }
+                ]
+            },
+            {
+                'position': '开发工程师',
+                'company': 'XYZ公司',
+                'time': '2018-2021',
+                'description': '前端和后端开发',
+                'children': []
+            }
+        ],
+        'skills': [
+            {
+                'category': '编程语言',
+                'items': ['Python', 'JavaScript', 'Java', 'C++'],
+                'children': []
+            },
+            {
+                'category': '框架',
+                'items': ['Django', 'Flask', 'React', 'Vue.js'],
+                'children': []
+            },
+            {
+                'category': '其他',
+                'items': ['数据库设计', 'RESTful API', '系统架构', 'DevOps'],
+                'children': []
+            }
+        ]
+    }
+    
+    context = {
+        'user': user,
+        'profile': profile,
+        'cv_data': cv_data,
+        'page_title': f"{user.username}的个人简历"
+    }
+    
+    return render(request, 'userprofile/cv.html', context)
+
 # 作者统计信息API
 def user_stats_api(request, id):
     """

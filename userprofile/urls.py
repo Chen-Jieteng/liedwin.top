@@ -14,6 +14,9 @@ urlpatterns = [
     path('delete/<int:id>/', views.user_delete, name='delete'),
     # 用户信息
     path('edit/<int:id>/', views.profile_edit, name='edit'),
+    # 用户CV页面
+    path('cv/', views.user_cv, name='cv'),
+    path('cv/<int:id>/', views.user_cv, name='cv_with_id'),
     # 用户统计信息API
     path('api/stats/<int:id>/', views.user_stats_api, name='user_stats_api'),
 ]

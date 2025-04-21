@@ -887,6 +887,58 @@
             flex: 0 0 calc(100% - 20px);
         }
     }
+    
+    /* 个人照片样式优化 */
+    .profile-image-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+    
+    .profile-image {
+        width: 220px;
+        height: 220px;
+        border-radius: 50%;
+        overflow: hidden;
+        border: 4px solid #fff;
+        box-shadow: 0 0.25rem 0.75rem rgba(0,0,0,0.1);
+        position: relative;
+        background-color: #f8f9fa;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .profile-image img {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important;
+        object-position: center top;
+        display: block;
+        margin: 0;
+        padding: 0;
+    }
+    
+    /* 确保照片没有空白部分 */
+    .profile-image::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #f8f9fa;
+        z-index: -1;
+    }
+    
+    @media (max-width: 767px) {
+        .profile-image {
+            width: 180px;
+            height: 180px;
+            margin: 0 auto 20px;
+        }
+    }
 </style>
 {% endblock head_extend %}
 
@@ -964,11 +1016,7 @@
                 <div class="row">
                     <div class="col-md-4 profile-image-container">
                         <div class="profile-image">
-                            {% if profile.avatar %}
-                                <img src="{{ profile.avatar.url }}" alt="{{ user.username }}">
-                            {% else %}
-                                <img src="{% static 'images/default-avatar.png' %}" alt="默认头像">
-                            {% endif %}
+                            <img src="https://thumbnail1.baidupcs.com/thumbnail/b526f2f20i41e6aca2576c574036a1d7?fid=339405386-250528-1036703788736444&rt=pr&sign=FDTAER-DCb740ccc5511e5e8fedcff06b081203-XRbDOSQju8XYZcHbFbst22wrZ%2bI%3d&expires=8h&chkbd=0&chkv=0&dp-logid=271093560131976528&dp-callid=0&time=1745258400&size=c1512_u982&quality=90&vuk=339405386&ft=image&autopolicy=1" alt="陈杰腾个人照片" style="width:100% !important; height:100% !important; object-fit:cover !important; object-position:center top; display:block; margin:0; padding:0;">
                         </div>
                     </div>
                     <div class="col-md-8">
@@ -2084,72 +2132,121 @@
         </div>
     </div>
 </div>
+{% endblock content %}
 
-<!-- 添加折叠功能的脚本 -->
+{% block script %}
 <script>
+    // 显示智能客服组件，仅在CV页面
     document.addEventListener('DOMContentLoaded', function() {
-        // 显示HR引导模态框
-        $('#hrGuideModal').modal('show');
+        console.log("CV页面加载完成，初始化智能客服...");
         
-        // 引导使用智能客服
+        // 首先禁用base.html中绑定的事件监听器
+        try {
+            const originalChatToggleBtn = document.getElementById('chatToggleBtn');
+            const originalChatCloseBtn = document.getElementById('chatCloseBtn');
+            
+            if (originalChatToggleBtn) {
+                console.log("清除原有按钮事件");
+                // 克隆节点以移除所有事件监听器
+                const newChatToggleBtn = originalChatToggleBtn.cloneNode(true);
+                originalChatToggleBtn.parentNode.replaceChild(newChatToggleBtn, originalChatToggleBtn);
+            }
+            
+            if (originalChatCloseBtn) {
+                console.log("清除原有关闭按钮事件");
+                const newChatCloseBtn = originalChatCloseBtn.cloneNode(true);
+                originalChatCloseBtn.parentNode.replaceChild(newChatCloseBtn, originalChatCloseBtn);
+            }
+        } catch (e) {
+            console.error("清除事件出错:", e);
+        }
+        
+        // 显示聊天组件
+        const aiChatWidget = document.getElementById('aiChatWidget');
+        if (aiChatWidget) {
+            console.log("显示聊天组件");
+            aiChatWidget.style.display = 'block';
+        } else {
+            console.error("未找到聊天组件 aiChatWidget");
+        }
+        
+        // 重新绑定按钮事件
+        const chatToggleBtn = document.getElementById('chatToggleBtn');
+        const chatContainer = document.getElementById('chatContainer');
+        const chatCloseBtn = document.getElementById('chatCloseBtn');
+        
+        console.log("重新绑定按钮事件:", 
+                   "chatToggleBtn存在:", !!chatToggleBtn, 
+                   "chatContainer存在:", !!chatContainer, 
+                   "chatCloseBtn存在:", !!chatCloseBtn);
+        
+        if (chatToggleBtn && chatContainer) {
+            chatToggleBtn.onclick = function(e) {
+                console.log("点击聊天按钮");
+                e.preventDefault();
+                e.stopPropagation();
+                chatContainer.classList.toggle('active');
+                console.log("聊天容器状态:", chatContainer.classList.contains('active') ? "已打开" : "已关闭");
+            };
+        }
+        
+        if (chatCloseBtn && chatContainer) {
+            chatCloseBtn.onclick = function(e) {
+                console.log("点击关闭按钮");
+                e.preventDefault();
+                e.stopPropagation();
+                chatContainer.classList.remove('active');
+            };
+        }
+        
+        // 显示引导提示
         const tooltip = document.getElementById('aiGuideTooltip');
         const closeTooltip = document.getElementById('closeTooltip');
-        const aiChatBtn = document.querySelector('.chat-toggle-btn');
         
-        // 关闭模态框后，显示智能客服引导提示
-        $('#hrGuideModal').on('hidden.bs.modal', function() {
-            const date = new Date();
-            date.setTime(date.getTime() + (24 * 60 * 60 * 1000)); // 一天有效期
-            document.cookie = "cv_guide_shown=true; expires=" + date.toUTCString() + "; path=/";
+        console.log("引导提示元素:", "tooltip存在:", !!tooltip, "closeTooltip存在:", !!closeTooltip);
+        
+        if (tooltip && closeTooltip && chatToggleBtn) {
+            // 显示引导提示
+            tooltip.style.display = 'block';
             
-            // 显示智能客服引导
             setTimeout(function() {
+                console.log("显示引导提示动画");
                 tooltip.classList.add('show');
                 
                 // 让智能客服按钮呼吸闪烁
-                if (aiChatBtn) {
-                    aiChatBtn.classList.add('pulse-animation');
-                    
-                    // 动画结束后停止
-                    setTimeout(function() {
-                        aiChatBtn.classList.remove('pulse-animation');
-                    }, 4500); // 1.5s × 3次
-                }
+                chatToggleBtn.classList.add('pulse-animation');
+                
+                // 动画结束后停止
+                setTimeout(function() {
+                    chatToggleBtn.classList.remove('pulse-animation');
+                }, 4500); // 1.5s × 3次
                 
                 // 30秒后自动隐藏提示
                 setTimeout(function() {
                     tooltip.classList.remove('show');
                 }, 30000);
-            }, 1000);
-        });
-        
-        // 关闭提示
-        closeTooltip.addEventListener('click', function() {
-            tooltip.classList.remove('show');
-        });
-        
-        // 点击智能客服按钮时也隐藏提示
-        if (aiChatBtn) {
-            aiChatBtn.addEventListener('click', function() {
+            }, 2000);
+            
+            // 关闭提示
+            closeTooltip.onclick = function(e) {
+                console.log("点击关闭提示");
+                e.preventDefault();
+                e.stopPropagation();
+                tooltip.classList.remove('show');
+            };
+            
+            // 点击智能客服按钮时也隐藏提示
+            chatToggleBtn.addEventListener('click', function() {
                 tooltip.classList.remove('show');
             });
         }
         
-        // 检查是否已经显示过
-        function getCookie(name) {
-            const value = `; ${document.cookie}`;
-            const parts = value.split(`; ${name}=`);
-            if (parts.length === 2) return parts.pop().split(';').shift();
-        }
-        
-        // 如果已经显示过，则不再显示
-        if (getCookie('cv_guide_shown')) {
-            $('#hrGuideModal').modal('hide');
-        }
-        
+        // 显示HR引导模态框
+        $('#hrGuideModal').modal('show');
+         
         // 为技能标题添加点击事件，切换图标状态
         const skillTitles = document.querySelectorAll('.skill-title[data-toggle="collapse"]');
-        
+         
         // 使用事件委托优化性能
         document.querySelector('.tree-item').addEventListener('click', function(e) {
             const title = e.target.closest('.skill-title');
@@ -2160,7 +2257,7 @@
                 }, 10);
             }
         });
-        
+         
         // 初始化标题状态
         skillTitles.forEach(title => {
             const targetId = title.getAttribute('data-target');
@@ -2178,8 +2275,6 @@
 <!-- 蜘蛛图脚本 -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // 已有的初始化代码
-        
         // 初始化蜘蛛图
         const ctx = document.getElementById('radarChart').getContext('2d');
         const radarChart = new Chart(ctx, {
@@ -2262,4 +2357,4 @@
         });
     });
 </script>
-{% endblock content %} 
+{% endblock script %} 

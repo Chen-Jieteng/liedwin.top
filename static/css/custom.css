@@ -111,6 +111,32 @@ div[style*="width"] img[alt*="avatar"],
     display: block !important;
 }
 
+/* 控制CKEditor编辑器中图片的尺寸 */
+.cke_editable img {
+    max-width: 98% !important; /* 确保不超出编辑器 */
+    width: auto !important; /* 自适应宽度 */
+    height: auto !important;
+    display: block !important;
+    margin: 10px auto !important; /* 图片居中显示并添加上下边距 */
+}
+
+/* 确保文章内容页面也应用相同的图片样式 */
+.article-body img {
+    max-width: 98% !important; /* 确保不超出容器 */
+    width: auto !important; /* 自适应宽度 */
+    height: auto !important;
+    display: block !important;
+    margin: 10px auto !important;
+}
+
+/* 响应式调整图片大小 */
+@media (max-width: 768px) {
+    .cke_editable img,
+    .article-body img {
+        max-width: 100% !important;
+    }
+}
+
 .author-avatar,
 .comment-avatar,
 .user-avatar,
@@ -228,4 +254,110 @@ div[class*="avatar"] {
 /* 确保鼠标悬浮在头像上时显示手型指针 */
 .author-avatar {
     cursor: pointer;
+}
+
+/* 智能客服组件样式 */
+.ai-chat-widget {
+    position: fixed;
+    bottom: 6.5rem; /* 调整位置，与回到顶部按钮保持距离 */
+    right: 1.5rem; /* 与回到顶部按钮水平对齐 */
+    z-index: 1000;
+}
+
+.chat-toggle-btn {
+    width: 3.5rem; /* 与回到顶部按钮大小一致 */
+    height: 3.5rem; /* 与回到顶部按钮大小一致 */
+    border-radius: 33%; /* 匹配回到顶部按钮的样式 */
+    background-color: #007bff;
+    color: white;
+    border: none;
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    transition: all 0.3s ease;
+    opacity: 0.7; /* 与回到顶部按钮透明度一致 */
+}
+
+.chat-toggle-btn:hover {
+    transform: scale(1.1);
+    opacity: 1;
+    box-shadow: 0 6px 16px rgba(0, 123, 255, 0.5);
+}
+
+.pulse-animation {
+    animation: pulse-attention 1.5s ease-in-out 3;
+}
+
+@keyframes pulse-attention {
+    0% { transform: scale(1); box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4); }
+    50% { transform: scale(1.1); box-shadow: 0 4px 18px rgba(0, 123, 255, 0.6); }
+    100% { transform: scale(1); box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4); }
+}
+
+.ai-guide-tooltip {
+    position: fixed;
+    bottom: 110px;
+    right: 80px;
+    background-color: white;
+    padding: 12px 18px;
+    border-radius: 8px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+    font-size: 0.9rem;
+    color: #495057;
+    z-index: 999;
+    max-width: 220px;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    pointer-events: auto; /* 确保可以点击关闭按钮 */
+}
+
+.ai-guide-tooltip.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.ai-guide-tooltip:after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    right: 12px;
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-top: 10px solid white;
+}
+
+.ai-guide-tooltip .close-tooltip {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: none;
+    border: none;
+    color: #adb5bd;
+    cursor: pointer;
+    padding: 0;
+    font-size: 0.9rem;
+}
+
+.ai-guide-tooltip .close-tooltip:hover {
+    color: #495057;
+}
+
+/* 响应式调整 */
+@media (max-width: 576px) {
+    .chat-container {
+        width: calc(100% - 40px);
+        right: 20px;
+        bottom: 80px;
+    }
+    
+    .ai-chat-widget {
+        bottom: 6.5rem; /* 保持与回到顶部按钮的相对位置 */
+        right: 1.5rem; /* 与回到顶部按钮对齐 */
+    }
 } 

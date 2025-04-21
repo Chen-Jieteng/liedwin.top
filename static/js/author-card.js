@@ -185,4 +185,44 @@ $(document).ready(function() {
             }
         });
     }
+    
+    // 确保智能客服引导提示正常工作
+    $(document).on('DOMContentLoaded', function() {
+        // 获取智能客服相关元素
+        const tooltip = document.getElementById('aiGuideTooltip');
+        const closeTooltip = document.getElementById('closeTooltip');
+        const chatToggleBtn = document.getElementById('chatToggleBtn');
+        const chatContainer = document.getElementById('chatContainer');
+        
+        if (tooltip && closeTooltip && chatToggleBtn) {
+            // 显示智能客服引导
+            setTimeout(function() {
+                tooltip.classList.add('show');
+                
+                // 让智能客服按钮呼吸闪烁
+                chatToggleBtn.classList.add('pulse-animation');
+                
+                // 动画结束后停止
+                setTimeout(function() {
+                    chatToggleBtn.classList.remove('pulse-animation');
+                }, 4500); // 1.5s × 3次
+                
+                // 30秒后自动隐藏提示
+                setTimeout(function() {
+                    tooltip.classList.remove('show');
+                }, 30000);
+            }, 2000);
+            
+            // 关闭提示
+            closeTooltip.addEventListener('click', function() {
+                tooltip.classList.remove('show');
+            });
+            
+            // 点击智能客服按钮时也隐藏提示
+            chatToggleBtn.addEventListener('click', function() {
+                tooltip.classList.remove('show');
+                chatContainer.classList.toggle('active');
+            });
+        }
+    });
 }); 

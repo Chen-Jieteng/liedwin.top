@@ -207,18 +207,35 @@ def user_login(request):
 
 
 # 用户退出
-def user_logout(request):
+def user_logout(request, timestamp=None):
     # 获取来源页面URL
     referer_url = request.META.get('HTTP_REFERER')
     
-    # 执行退出登录操作
+    # 确保请求中有session
+    if hasattr(request, 'session'):
+        # 清除所有session数据
+        request.session.flush()
+    
+    # 执行Django的退出登录操作
     logout(request)
     
-    # 如果存在来源页面，重定向回来源页面，否则默认回到首页
+    # 创建一个新的响应对象以便能够删除所有auth相关cookies
     if referer_url:
-        return redirect(referer_url)
+        response = redirect(referer_url)
     else:
-        return redirect("article:article_list")
+        response = redirect("article:article_list")
+    
+    # 删除认证相关的cookies
+    response.delete_cookie('sessionid')
+    response.delete_cookie('sessionid_new')  # 使用settings中定义的名称
+    response.delete_cookie('csrftoken')  # 可选，通常不需要删除
+    
+    # 在响应中添加缓存控制头，防止浏览器缓存
+    response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response['Pragma'] = 'no-cache'
+    response['Expires'] = '0'
+    
+    return response
 
 
 # 用户注册

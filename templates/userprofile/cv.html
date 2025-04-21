@@ -2134,119 +2134,193 @@
 </div>
 {% endblock content %}
 
+{% block chat_widget %}
+<!-- 智能客服悬浮窗 -->
+<div class="ai-chat-widget" id="aiChatWidget" style="display: block; z-index: 1050;">
+    <button class="chat-toggle-btn" id="chatToggleBtn">
+        <i class="fas fa-comment-dots"></i>
+    </button>
+    
+    <div class="chat-container" id="chatContainer">
+        <div class="chat-header">
+            <div class="chat-title">
+                <i class="fas fa-robot"></i>
+                <span>智能客服</span>
+            </div>
+            <button class="chat-close" id="chatCloseBtn">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="chat-body" id="chatBody">
+            <!-- 欢迎消息 -->
+            <div class="chat-message message-bot">
+                <div class="message-content">
+                    您好！我是芥尘的AI助手，有什么可以帮到您的吗？
+                </div>
+                <div class="message-time">刚刚</div>
+            </div>
+            
+            <!-- 正在输入提示 -->
+            <div class="typing-indicator" id="typingIndicator">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+        
+        <div class="chat-suggestions" id="chatSuggestions">
+            <div class="chat-suggestion">你熟悉Spring框架吗？</div>
+            <div class="chat-suggestion">你有哪些Android开发经验？</div>
+            <div class="chat-suggestion">你的项目中使用了哪些AI技术？</div>
+            <div class="chat-suggestion">你如何处理高并发场景？</div>
+        </div>
+        
+        <div class="chat-footer">
+            <div class="chat-input-container">
+                <input type="text" class="chat-input" id="chatInput" placeholder="请输入您的问题...">
+                <button class="chat-send-btn" id="chatSendBtn">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock chat_widget %}
+
+{% block chat_script %}
+<!-- 智能客服脚本 -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 显示AI聊天组件
+        document.getElementById('aiChatWidget').style.display = 'block';
+        
+        const chatToggleBtn = document.getElementById('chatToggleBtn');
+        const chatContainer = document.getElementById('chatContainer');
+        const chatCloseBtn = document.getElementById('chatCloseBtn');
+        const chatInput = document.getElementById('chatInput');
+        const chatSendBtn = document.getElementById('chatSendBtn');
+        const chatBody = document.getElementById('chatBody');
+        const typingIndicator = document.getElementById('typingIndicator');
+        const suggestions = document.querySelectorAll('.chat-suggestion');
+        
+        // 切换聊天窗口
+        chatToggleBtn.addEventListener('click', function() {
+            chatContainer.classList.toggle('active');
+        });
+        
+        // 关闭聊天窗口
+        chatCloseBtn.addEventListener('click', function() {
+            chatContainer.classList.remove('active');
+        });
+        
+        // 预设的回答
+        const presetResponses = {
+            "spring": "是的，我非常熟悉Spring框架及其生态系统。在我的项目中，我使用了Spring Boot 3.2.3、Spring MVC、Spring Security和Spring Data JPA。我构建了完整的后端服务，包括RESTful API设计、安全认证、数据库访问优化等。我也熟悉Spring的依赖注入、AOP等核心概念，并能够配置和优化Spring应用。",
+            "android": "我有丰富的Android开发经验。使用Kotlin和Jetpack Compose构建现代化的Android应用，采用MVVM架构模式，集成Room、Retrofit和Hilt等组件。我开发的Android应用支持多种屏幕尺寸和分辨率，注重用户体验和性能优化。",
+            "ai": "在我的项目中，我集成了多种AI技术，包括使用LangChain构建智能体框架，对接DeepSeek/GPT等大语言模型API，以及使用Milvus向量数据库进行语义搜索。我还实现了NLP技术来处理和分析用户数据，使应用能够提供个性化的智能服务。",
+            "并发": "对于高并发场景，我采用多层次的解决方案：1) 应用层面使用异步编程和线程池管理；2) 架构层面实现服务拆分和微服务架构；3) 数据层面使用Redis缓存减轻数据库压力，实现读写分离；4) 基础设施层面进行集群部署和负载均衡。在Spring项目中，我还使用了响应式编程模型来提高并发处理能力。",
+            "博客": "这个博客使用Django+MVT架构开发，实现了文章发布、多级评论、社交登录、实时通知等功能。技术上采用Django ORM+SQL实现数据建模，MPTT算法优化树形评论结构，集成django-allauth实现OAuth2.0登录，django-notifications构建实时消息系统。前端基于Bootstrap实现响应式布局，使用CKEditor富文本编辑器，MathJax+Prism实现公式渲染与代码高亮。",
+            "教育": "我曾获得两次国际生奖金，并担任市红十字会志愿者，参加过学校、市政府、中广核等志愿服务。学习过的主要课程包括Java，计算机四大件，设计模式，DBMS，分布式系统基础，IT项目管理，常微分方程，大学物理，高等数学，Web开发，系统分析，ERP应用，系统管理等。"
+        };
+        
+        function getAIResponse(query) {
+            // 关键词匹配
+            if (query.includes('Spring') || query.includes('spring')) {
+                return presetResponses.spring;
+            } else if (query.includes('Android') || query.includes('android')) {
+                return presetResponses.android;
+            } else if (query.includes('AI') || query.includes('ai') || query.includes('人工智能')) {
+                return presetResponses.ai;
+            } else if (query.includes('并发') || query.includes('高并发')) {
+                return presetResponses.并发;
+            } else if (query.includes('博客') || query.includes('网站') || query.includes('平台')) {
+                return presetResponses.博客;
+            } else if (query.includes('教育') || query.includes('学习') || query.includes('课程')) {
+                return presetResponses.教育;
+            } else {
+                return "关于\"" + query + "\"，我可以告诉您我在相关领域有丰富的经验和实践。如果您想了解更具体的信息，可以询问关于我的技术栈、项目经验或者特定技能的问题。";
+            }
+        }
+        
+        // 发送消息
+        function sendMessage() {
+            const message = chatInput.value.trim();
+            if (!message) return;
+            
+            // 添加用户消息
+            addMessage(message, 'user');
+            chatInput.value = '';
+            
+            // 显示正在输入
+            typingIndicator.style.display = 'inline-block';
+            chatBody.scrollTop = chatBody.scrollHeight;
+            
+            // 模拟AI思考和回复
+            setTimeout(function() {
+                typingIndicator.style.display = 'none';
+                const response = getAIResponse(message);
+                addMessage(response, 'bot');
+            }, 1200);
+        }
+        
+        // 发送按钮
+        chatSendBtn.addEventListener('click', sendMessage);
+        
+        // 回车发送
+        chatInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+        
+        // 建议点击
+        suggestions.forEach(suggestion => {
+            suggestion.addEventListener('click', function() {
+                const suggestionText = this.textContent;
+                chatInput.value = suggestionText;
+                sendMessage();
+            });
+        });
+        
+        // 添加消息到聊天窗口
+        function addMessage(content, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message message-${sender === 'user' ? 'user' : 'bot'}`;
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            contentDiv.textContent = content;
+            
+            const timeDiv = document.createElement('div');
+            timeDiv.className = 'message-time';
+            timeDiv.textContent = '刚刚';
+            
+            messageDiv.appendChild(contentDiv);
+            messageDiv.appendChild(timeDiv);
+            
+            // 在输入指示器之前插入
+            chatBody.insertBefore(messageDiv, typingIndicator);
+            
+            // 滚动到底部
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+    });
+</script>
+{% endblock chat_script %} 
+
 {% block script %}
 <script>
     // 显示智能客服组件，仅在CV页面
     document.addEventListener('DOMContentLoaded', function() {
         console.log("CV页面加载完成，初始化智能客服...");
         
-        // 首先禁用base.html中绑定的事件监听器
-        try {
-            const originalChatToggleBtn = document.getElementById('chatToggleBtn');
-            const originalChatCloseBtn = document.getElementById('chatCloseBtn');
-            
-            if (originalChatToggleBtn) {
-                console.log("清除原有按钮事件");
-                // 克隆节点以移除所有事件监听器
-                const newChatToggleBtn = originalChatToggleBtn.cloneNode(true);
-                originalChatToggleBtn.parentNode.replaceChild(newChatToggleBtn, originalChatToggleBtn);
-            }
-            
-            if (originalChatCloseBtn) {
-                console.log("清除原有关闭按钮事件");
-                const newChatCloseBtn = originalChatCloseBtn.cloneNode(true);
-                originalChatCloseBtn.parentNode.replaceChild(newChatCloseBtn, originalChatCloseBtn);
-            }
-        } catch (e) {
-            console.error("清除事件出错:", e);
-        }
-        
-        // 显示聊天组件
-        const aiChatWidget = document.getElementById('aiChatWidget');
-        if (aiChatWidget) {
-            console.log("显示聊天组件");
-            aiChatWidget.style.display = 'block';
-        } else {
-            console.error("未找到聊天组件 aiChatWidget");
-        }
-        
-        // 重新绑定按钮事件
-        const chatToggleBtn = document.getElementById('chatToggleBtn');
-        const chatContainer = document.getElementById('chatContainer');
-        const chatCloseBtn = document.getElementById('chatCloseBtn');
-        
-        console.log("重新绑定按钮事件:", 
-                   "chatToggleBtn存在:", !!chatToggleBtn, 
-                   "chatContainer存在:", !!chatContainer, 
-                   "chatCloseBtn存在:", !!chatCloseBtn);
-        
-        if (chatToggleBtn && chatContainer) {
-            chatToggleBtn.onclick = function(e) {
-                console.log("点击聊天按钮");
-                e.preventDefault();
-                e.stopPropagation();
-                chatContainer.classList.toggle('active');
-                console.log("聊天容器状态:", chatContainer.classList.contains('active') ? "已打开" : "已关闭");
-            };
-        }
-        
-        if (chatCloseBtn && chatContainer) {
-            chatCloseBtn.onclick = function(e) {
-                console.log("点击关闭按钮");
-                e.preventDefault();
-                e.stopPropagation();
-                chatContainer.classList.remove('active');
-            };
-        }
-        
-        // 显示引导提示
-        const tooltip = document.getElementById('aiGuideTooltip');
-        const closeTooltip = document.getElementById('closeTooltip');
-        
-        console.log("引导提示元素:", "tooltip存在:", !!tooltip, "closeTooltip存在:", !!closeTooltip);
-        
-        if (tooltip && closeTooltip && chatToggleBtn) {
-            // 显示引导提示
-            tooltip.style.display = 'block';
-            
-            setTimeout(function() {
-                console.log("显示引导提示动画");
-                tooltip.classList.add('show');
-                
-                // 让智能客服按钮呼吸闪烁
-                chatToggleBtn.classList.add('pulse-animation');
-                
-                // 动画结束后停止
-                setTimeout(function() {
-                    chatToggleBtn.classList.remove('pulse-animation');
-                }, 4500); // 1.5s × 3次
-                
-                // 30秒后自动隐藏提示
-                setTimeout(function() {
-                    tooltip.classList.remove('show');
-                }, 30000);
-            }, 2000);
-            
-            // 关闭提示
-            closeTooltip.onclick = function(e) {
-                console.log("点击关闭提示");
-                e.preventDefault();
-                e.stopPropagation();
-                tooltip.classList.remove('show');
-            };
-            
-            // 点击智能客服按钮时也隐藏提示
-            chatToggleBtn.addEventListener('click', function() {
-                tooltip.classList.remove('show');
-            });
-        }
-        
         // 显示HR引导模态框
         $('#hrGuideModal').modal('show');
          
         // 为技能标题添加点击事件，切换图标状态
         const skillTitles = document.querySelectorAll('.skill-title[data-toggle="collapse"]');
-         
+        
         // 使用事件委托优化性能
         document.querySelector('.tree-item').addEventListener('click', function(e) {
             const title = e.target.closest('.skill-title');
@@ -2257,7 +2331,7 @@
                 }, 10);
             }
         });
-         
+        
         // 初始化标题状态
         skillTitles.forEach(title => {
             const targetId = title.getAttribute('data-target');

@@ -19,6 +19,7 @@ def user_cv(request, id=None):
     """
     显示用户的简历CV页面，带有树形结构展示
     如果id为None，则显示当前登录用户的CV
+    如果未登录且id为None，则显示默认CV（站长的CV）
     """
     # 确定要显示的用户
     if id is not None:
@@ -29,7 +30,18 @@ def user_cv(request, id=None):
     elif request.user.is_authenticated:
         user = request.user
     else:
-        return redirect("userprofile:login")
+        # 未登录用户默认显示ID为1的用户CV（通常是站长）
+        # 如果站长ID不是1，请替换为正确的ID
+        try:
+            user = User.objects.get(id=1)
+        except User.DoesNotExist:
+            # 如果ID为1的用户不存在，则尝试获取第一个用户
+            try:
+                user = User.objects.first()
+                if not user:
+                    return HttpResponse("系统中没有用户，无法显示CV")
+            except:
+                return HttpResponse("无法获取默认用户CV")
     
     # 获取用户资料
     if Profile.objects.filter(user=user).exists():

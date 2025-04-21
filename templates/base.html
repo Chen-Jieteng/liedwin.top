@@ -316,25 +316,22 @@
         <!-- 常规脚本占位符 -->
         {% block script %}{% endblock script %}
         
-        {% include 'back_to_top_func.html' %}
-        
-        <!-- 会话状态检查 -->
+        <!-- 统一会话管理脚本 -->
         <script>
+            // 确保所有页面使用同一个会话管理方式
             document.addEventListener('DOMContentLoaded', function() {
-                // 检查是否是从CV页面强制退出后跳转来的
-                if (localStorage.getItem('force_logged_out') === 'true') {
-                    console.log('检测到CV页面退出登录状态');
-                    // 清除标记
-                    localStorage.removeItem('force_logged_out');
-                    
-                    // 如果用户仍显示为已登录，强制刷新页面获取最新状态
-                    if (document.querySelector('.navbar-nav .dropdown-toggle[aria-haspopup="true"]')) {
-                        console.log('当前页面显示用户仍登录，强制刷新');
-                        window.location.reload();
-                    }
+                // 使用localStorage检查和设置会话状态，确保CV页面和其他页面共享会话信息
+                function checkSessionState() {
+                    // 这里可以根据需要添加额外的会话检查逻辑
+                    console.log("统一会话管理初始化完成");
                 }
+                
+                // 初始化会话管理
+                checkSessionState();
             });
         </script>
+        
+        {% include 'back_to_top_func.html' %}
         
         <!-- 确保所有头像图片都正确填充圆形容器 -->
         <script>

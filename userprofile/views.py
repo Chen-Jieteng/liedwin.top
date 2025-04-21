@@ -14,27 +14,6 @@ from .models import Profile
 # 导入文章模型
 from article.models import ArticlePost
 
-# 会话状态检查
-def check_auth(request):
-    """
-    简单的会话状态检查，用于前端验证用户是否已登录
-    如果用户已登录，返回200状态码
-    如果用户未登录，返回403状态码
-    """
-    # 确保使用最新的请求状态检查认证
-    request.user = request._request.user if hasattr(request, '_request') else request.user
-    
-    if request.user.is_authenticated:
-        response = HttpResponse("Authenticated", status=200)
-    else:
-        response = HttpResponse("Not authenticated", status=403)
-    
-    # 添加跨域响应头(如果需要)
-    if 'HTTP_X_REQUESTED_WITH' in request.META:
-        response['Access-Control-Allow-Origin'] = '*'
-    
-    return response
-
 # 个人CV视图
 def user_cv(request, id=None):
     """
@@ -42,9 +21,6 @@ def user_cv(request, id=None):
     如果id为None，则显示当前登录用户的CV
     如果未登录且id为None，则显示默认CV（站长的CV）
     """
-    # 确保使用最新的请求状态检查认证
-    request.user = request._request.user if hasattr(request, '_request') else request.user
-    
     # 确定要显示的用户
     if id is not None:
         try:
@@ -203,14 +179,28 @@ def user_login(request):
             if user:
                 # 将用户数据保存在 session 中，即实现了登录动作
                 login(request, user)
-                return redirect("article:article_list")
+                
+                # 获取来源页面URL或next参数
+                next_url = request.POST.get('next') or request.GET.get('next')
+                referer_url = request.META.get('HTTP_REFERER')
+                
+                # 优先使用next参数，其次使用来源页面，最后默认到文章列表
+                if next_url:
+                    return redirect(next_url)
+                elif referer_url:
+                    return redirect(referer_url)
+                else:
+                    return redirect("article:article_list")
             else:
                 return HttpResponse("账号或密码输入有误。请重新输入~")
         else:
             return HttpResponse("账号或密码输入不合法")
     elif request.method == 'GET':
         user_login_form = UserLoginForm()
-        context = { 'form': user_login_form }
+        context = { 
+            'form': user_login_form,
+            'next': request.GET.get('next', '')
+        }
         return render(request, 'userprofile/login.html', context)
     else:
         return HttpResponse("请使用GET或POST请求数据")
@@ -218,26 +208,16 @@ def user_login(request):
 
 # 用户退出
 def user_logout(request):
-    # 执行Django的logout函数，清除会话
+    # 获取来源页面URL
+    referer_url = request.META.get('HTTP_REFERER')
+    
+    # 执行退出登录操作
     logout(request)
     
-    # 获取请求的来源，以便判断是否来自CV页面
-    referer = request.META.get('HTTP_REFERER', '')
-    is_from_cv = 'userprofile/cv' in referer
-    
-    # 检查是否是AJAX请求
-    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
-    
-    # 如果是AJAX请求，返回JSON响应
-    if is_ajax:
-        return JsonResponse({'status': 'success', 'message': '已成功退出登录'})
-    
-    # 根据来源页面决定重定向目标
-    if is_from_cv:
-        # 如果来自CV页面，重定向到首页
-        return redirect("article:article_list")
+    # 如果存在来源页面，重定向回来源页面，否则默认回到首页
+    if referer_url:
+        return redirect(referer_url)
     else:
-        # 正常重定向到首页
         return redirect("article:article_list")
 
 

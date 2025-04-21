@@ -16,12 +16,12 @@
                         <!-- <a href="https://www.nowcoder.com/users/211925195" target="_blank" class="social-link" title="牛客网"><i class="fas fa-code"></i></a> -->
                         <a href="https://github.com/Chen-Jieteng" target="_blank" class="social-link" title="GitHub"><i class="fab fa-github"></i></a>
                         <!-- <a href="#" class="social-link" title="LeetCode"><i class="fas fa-code-branch"></i></a> -->
-                        <a href="https://www.kaggle.com/chenedwin" target="_blank" class="social-link" title="Kaggle">
+                        <!-- <a href="https://www.kaggle.com/chenedwin" target="_blank" class="social-link" title="Kaggle">
                             <img src="{% static 'images/icons/kaggle-k.svg' %}" alt="Kaggle" class="social-icon-img">
                         </a>
                         <a href="https://huggingface.co/EdwinC" target="_blank" class="social-link" title="HuggingFace">
                             <img src="{% static 'images/icons/huggingface.svg' %}" alt="HuggingFace" class="social-icon-img">
-                        </a>
+                        </a> -->
                         <a href="#" class="social-link" title="领英"><i class="fab fa-linkedin-in"></i></a>
                     </div>
                 </div>
@@ -30,7 +30,7 @@
                 <div class="col-lg-2 col-md-6 mb-4 mb-lg-0">
                     <h5 class="footer-heading">关于我</h5>
                     <ul class="footer-links">
-                        <li><a href="https://1150964115.wixsite.com/website/experiences">个人CV</a></li>
+                        <li><a href="{% url 'userprofile:cv' %}">个人CV</a></li>
                         <li><a href="https://1150964115.wixsite.com/website/skills">个人爱好</a></li>
                         <li><a href="https://1150964115.wixsite.com/website/skills">个人生活</a></li>
                     </ul>
@@ -208,7 +208,7 @@
         display: inline-flex;
         align-items: center;
         color: #6c757d;
-        font-size: 0.75rem;
+        font-size: 0.85rem;
         text-decoration: none;
         transition: color 0.3s ease;
     }
@@ -219,9 +219,10 @@
     }
     
     .beian-icon {
-        width: 14px;
-        height: 14px;
+        width: 25px;
+        height: 25px;
         margin-right: 5px;
+        vertical-align: middle;
     }
     
     @media (max-width: 767px) {

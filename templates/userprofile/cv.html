@@ -1,0 +1,2265 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock title %}
+
+{% block head_extend %}
+<style>
+    /* CV页面样式 */
+    .cv-container {
+        position: relative;
+    }
+    
+    /* 树形结构样式 */
+    .tree-container {
+        padding: 30px 0;
+    }
+    
+    .tree {
+        position: relative;
+    }
+    
+    .tree::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 20px;
+        height: 100%;
+        width: 2px;
+        background: #007bff;
+        z-index: 0;
+    }
+    
+    .tree-section {
+        position: relative;
+        margin-bottom: 50px;
+    }
+    
+    .tree-section:last-child {
+        margin-bottom: 0;
+    }
+    
+    .tree-title {
+        position: relative;
+        margin-bottom: 30px;
+        color: #343a40;
+        font-weight: 600;
+        padding-left: 50px;
+    }
+    
+    .tree-title::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 20px;
+        width: 20px;
+        height: 2px;
+        background: #007bff;
+        transform: translateY(-50%);
+    }
+    
+    .tree-title::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 15px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #007bff;
+        transform: translateY(-50%);
+        z-index: 1;
+    }
+    
+    .tree-item {
+        position: relative;
+        padding: 20px 20px 20px 50px;
+        margin-bottom: 30px;
+        border-radius: 5px;
+        background-color: #f8f9fa;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+    }
+    
+    .tree-item:hover {
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        transform: translateY(-2px);
+    }
+    
+    /* 移除专业技能中的tree-item前装饰元素 */
+    .tree-section:not(.tree-section:first-child) .tree-item::before,
+    .tree-section:not(.tree-section:first-child) .tree-item::after {
+        display: none;
+    }
+    
+    /* 为非专业技能部分的tree-item保留装饰元素 */
+    .tree-section:not(:first-child) .tree-item::before {
+        content: '';
+        position: absolute;
+        top: 30px;
+        left: 20px;
+        width: 20px;
+        height: 2px;
+        background: #007bff;
+    }
+    
+    .tree-section:not(:first-child) .tree-item::after {
+        content: '';
+        position: absolute;
+        top: 30px;
+        left: 15px;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #6c757d;
+    }
+    
+    .tree-item-title {
+        color: #343a40;
+        font-weight: 600;
+        margin-bottom: 10px;
+        font-size: 1.1em;
+    }
+    
+    .tree-item-subtitle {
+        color: #6c757d;
+        margin-bottom: 10px;
+        font-style: italic;
+    }
+    
+    .tree-item-time {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        color: #007bff;
+        font-size: 0.9em;
+        font-weight: 500;
+    }
+    
+    .tree-item-desc {
+        color: #495057;
+        font-size: 0.95em;
+        line-height: 1.5;
+    }
+    
+    .tree-subitem {
+        position: relative;
+        padding: 15px 15px 15px 40px;
+        margin: 15px 0 0 10px;
+        border-left: 2px solid #dee2e6;
+        background-color: white;
+        border-radius: 0 5px 5px 0;
+    }
+    
+    /* 移除tree-subitem的装饰元素 */
+    .tree-subitem::before, 
+    .tree-subitem::after {
+        display: none;
+    }
+    
+    /* 原tree-subitem伪元素样式保留但不应用 */
+    /*
+    .tree-subitem::before {
+        content: '';
+        position: absolute;
+        top: 23px;
+        left: 0;
+        width: 12px;
+        height: 2px;
+        background: #dee2e6;
+    }
+    
+    .tree-subitem::after {
+        content: '';
+        position: absolute;
+        top: 23px;
+        left: -4px;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #adb5bd;
+    }
+    */
+    
+    .skill-category {
+        margin-bottom: 20px;
+    }
+    
+    .skill-title {
+        font-weight: 600;
+        color: #343a40;
+        margin-bottom: 10px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 12px;
+        background-color: #f8f9fa;
+        border-radius: 5px;
+        transition: all 0.15s ease;
+        will-change: background-color;
+    }
+    
+    .skill-title:hover {
+        background-color: #e9ecef;
+    }
+    
+    .skill-title i {
+        transition: transform 0.2s ease;
+        will-change: transform;
+    }
+    
+    .skill-title.collapsed i {
+        transform: rotate(-90deg);
+    }
+    
+    .skill-content {
+        padding: 15px 5px;
+        border-radius: 0 0 5px 5px;
+        overflow: hidden;
+    }
+    
+    .skill-item {
+        display: inline-block;
+        padding: 5px 15px;
+        margin: 5px;
+        border-radius: 20px;
+        background-color: #e9ecef;
+        color: #495057;
+        font-size: 0.9em;
+        transition: all 0.3s ease;
+    }
+    
+    .skill-item:hover {
+        background-color: #007bff;
+        color: white;
+    }
+    
+    /* 个人信息卡片样式 */
+    .profile-card {
+        padding: 30px;
+        margin-bottom: 30px;
+        text-align: left;
+    }
+    
+    .profile-name {
+        font-size: 1.8em;
+        font-weight: 700;
+        color: #343a40;
+        margin-bottom: 5px;
+        text-align: left;
+    }
+    
+    .profile-title {
+        color: #6c757d;
+        font-size: 1.1em;
+        margin-bottom: 20px;
+        text-align: left;
+    }
+    
+    .profile-bio {
+        color: #495057;
+        margin-bottom: 30px;
+        line-height: 1.6;
+        text-align: left;
+    }
+    
+    .profile-contact {
+        display: flex;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+    
+    .contact-item {
+        display: flex;
+        align-items: center;
+        color: #495057;
+    }
+    
+    .contact-item i {
+        margin-right: 8px;
+        color: #007bff;
+    }
+    
+    /* HR引导模态框样式 */
+    .hr-guide-modal .modal-dialog {
+        max-width: 500px;
+    }
+    
+    .hr-guide-modal .modal-header {
+        border-bottom: 2px solid #007bff;
+        background-color: #f8f9fa;
+    }
+    
+    .hr-guide-modal .modal-title {
+        color: #343a40;
+        font-weight: 600;
+    }
+    
+    .hr-guide-modal .modal-body {
+        padding: 25px;
+    }
+    
+    .hr-guide-modal .feature-item {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 15px;
+    }
+    
+    .hr-guide-modal .feature-icon {
+        flex-shrink: 0;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: rgba(0, 123, 255, 0.1);
+        color: #007bff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+    }
+    
+    .hr-guide-modal .feature-text {
+        flex-grow: 1;
+    }
+    
+    .hr-guide-modal .feature-text h5 {
+        margin-bottom: 5px;
+        font-weight: 600;
+        color: #343a40;
+    }
+    
+    .hr-guide-modal .feature-example {
+        background-color: #f8f9fa;
+        border-left: 3px solid #007bff;
+        padding: 15px;
+        margin: 20px 0;
+        border-radius: 0 5px 5px 0;
+    }
+    
+    .hr-guide-modal .btn-close-modal {
+        width: 100%;
+    }
+    
+    /* AI询问框样式 */
+    .ai-query-box {
+        background-color: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        padding: 30px;
+        margin-bottom: 40px;
+        transition: all 0.3s ease;
+    }
+    
+    .ai-query-box:hover {
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+    
+    .ai-query-title {
+        color: #343a40;
+        font-weight: 600;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+    }
+    
+    .ai-query-title i {
+        color: #007bff;
+        margin-right: 10px;
+        font-size: 1.5rem;
+    }
+    
+    .ai-query-form {
+        display: flex;
+        gap: 10px;
+    }
+    
+    .ai-query-input {
+        flex-grow: 1;
+        border: 2px solid #e9ecef;
+        border-radius: 50px;
+        padding: 10px 20px;
+        transition: all 0.3s ease;
+    }
+    
+    .ai-query-input:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+    
+    .ai-query-button {
+        border-radius: 50px;
+        padding: 10px 25px;
+    }
+    
+    .ai-response-area {
+        margin-top: 20px;
+        padding: 20px;
+        border-radius: 10px;
+        background-color: #f8f9fa;
+        border-left: 4px solid #007bff;
+        display: none;
+    }
+    
+    .ai-response-area.active {
+        display: block;
+        animation: fadeIn 0.5s;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .ai-suggestions {
+        margin-top: 15px;
+    }
+    
+    .ai-suggestion-chip {
+        display: inline-block;
+        margin: 5px;
+        padding: 5px 15px;
+        background-color: rgba(0, 123, 255, 0.1);
+        color: #007bff;
+        border-radius: 50px;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .ai-suggestion-chip:hover {
+        background-color: rgba(0, 123, 255, 0.2);
+        transform: translateY(-2px);
+    }
+    
+    .typing-animation::after {
+        content: '';
+        animation: blink 1s infinite;
+    }
+    
+    @keyframes blink {
+        0% { content: ''; }
+        25% { content: '.'; }
+        50% { content: '..'; }
+        75% { content: '...'; }
+        100% { content: ''; }
+    }
+    
+    /* 添加智能客服引导样式 */
+    .ai-guide-tooltip {
+        position: fixed;
+        bottom: 150px;
+        right: 80px;
+        background-color: white;
+        padding: 12px 18px;
+        border-radius: 8px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        font-size: 0.9rem;
+        color: #495057;
+        z-index: 999;
+        max-width: 220px;
+        opacity: 0;
+        transform: translateY(20px);
+        pointer-events: none;
+        transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    
+    .ai-guide-tooltip.show {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    
+    .ai-guide-tooltip:after {
+        content: '';
+        position: absolute;
+        bottom: -8px;
+        right: 12px;
+        width: 0;
+        height: 0;
+        border-left: 10px solid transparent;
+        border-right: 10px solid transparent;
+        border-top: 10px solid white;
+    }
+    
+    .ai-guide-tooltip .close-tooltip {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: none;
+        border: none;
+        color: #adb5bd;
+        cursor: pointer;
+        padding: 0;
+        font-size: 0.9rem;
+    }
+    
+    .ai-guide-tooltip .close-tooltip:hover {
+        color: #495057;
+    }
+    
+    /* 添加注意动画 */
+    @keyframes pulse-attention {
+        0% { transform: scale(1); box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4); }
+        50% { transform: scale(1.1); box-shadow: 0 4px 18px rgba(0, 123, 255, 0.6); }
+        100% { transform: scale(1); box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4); }
+    }
+    
+    .pulse-animation {
+        animation: pulse-attention 1.5s ease-in-out 3;
+    }
+    
+    /* 技能进度条样式 */
+    .skill-progress-container {
+        margin-bottom: 25px;
+    }
+    
+    .skill-item-with-progress {
+        margin-bottom: 15px;
+    }
+    
+    .skill-name {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #343a40;
+    }
+    
+    .skill-level-bar {
+        height: 8px;
+        background-color: #e9ecef;
+        border-radius: 4px;
+        overflow: hidden;
+        position: relative;
+    }
+    
+    .skill-level-progress {
+        height: 100%;
+        background: linear-gradient(to right, #007bff, #28a745);
+        border-radius: 4px;
+        position: relative;
+    }
+    
+    .skill-level-labels {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 6px;
+    }
+    
+    .skill-level-label {
+        font-size: 0.7rem;
+        color: #6c757d;
+    }
+    
+    /* 响应式调整 */
+    @media (max-width: 767px) {
+        .skill-col {
+            margin-bottom: 15px;
+        }
+    }
+    
+    /* 添加展开/折叠过渡动画 */
+    .collapsing {
+        transition: height 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        will-change: height;
+    }
+    
+    /* 蜘蛛图样式 */
+    .radar-chart-section {
+        margin: 40px 0;
+    }
+    
+    .radar-container {
+        background-color: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        padding: 15px;
+        position: relative;
+        height: 100%;
+    }
+    
+    .radar-title {
+        text-align: center;
+        margin-bottom: 25px;
+        color: #343a40;
+        font-weight: 600;
+    }
+    
+    .radar-subtitle {
+        text-align: center;
+        margin-bottom: 30px;
+        color: #6c757d;
+        font-size: 0.95em;
+    }
+    
+    .radar-chart-container {
+        max-width: 350px;
+        margin: 0 auto;
+        position: relative;
+    }
+    
+    .radar-legend {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        margin-top: 15px;
+    }
+    
+    .radar-legend-item {
+        display: flex;
+        align-items: center;
+        margin: 0 15px 8px;
+    }
+    
+    .radar-legend-color {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        margin-right: 8px;
+    }
+    
+    .radar-legend-text {
+        font-size: 0.85em;
+        color: #495057;
+    }
+    
+    /* 响应式调整 */
+    @media (max-width: 991px) {
+        .profile-chart-col {
+            margin-top: 20px;
+        }
+        
+        .radar-chart-container {
+            max-width: 250px;
+        }
+    }
+    
+    /* 蜘蛛图注释样式 */
+    .radar-note {
+        margin-top: 10px;
+        padding: 8px 12px;
+        background-color: rgba(255, 243, 205, 0.8);
+        border-left: 3px solid #ffc107;
+        font-size: 0.85em;
+        color: #856404;
+        border-radius: 0 4px 4px 0;
+    }
+    
+    .radar-note.secondary {
+        margin-top: 8px;
+        background-color: rgba(220, 237, 255, 0.8);
+        border-left: 3px solid #4d95e1;
+        color: #0c5460;
+    }
+    
+    /* 个人信息扩展样式 */
+    .profile-details {
+        margin-top: 25px;
+        padding-top: 25px;
+        border-top: 1px solid #eee;
+    }
+    
+    .profile-details-item {
+        margin-bottom: 15px;
+        display: flex;
+        align-items: flex-start;
+    }
+    
+    .profile-details-icon {
+        flex-shrink: 0;
+        width: 22px;
+        margin-right: 12px;
+        color: #6c757d;
+        text-align: center;
+    }
+    
+    .profile-details-content {
+        flex-grow: 1;
+    }
+    
+    .profile-tag {
+        display: inline-block;
+        margin: 3px;
+        padding: 3px 8px;
+        font-size: 0.85em;
+        background: #f1f8ff;
+        color: #0366d6;
+        border-radius: 12px;
+    }
+    
+    .profile-tag.highlight {
+        background: #e3f2fd;
+        color: #0d47a1;
+        font-weight: 500;
+    }
+    
+    .profile-availability {
+        display: inline-block;
+        padding: 4px 12px;
+        background-color: #dff2bf;
+        color: #4f8a10;
+        font-weight: 500;
+        border-radius: 12px;
+        margin-top: 10px;
+    }
+    
+    .profile-education {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .profile-education-degree {
+        font-weight: 500;
+    }
+    
+    .profile-education-school {
+        color: #495057;
+    }
+    
+    .profile-info-container {
+        margin-top: 20px;
+    }
+    
+    @media (max-width: 767px) {
+        .profile-info-right {
+            margin-top: 20px;
+        }
+    }
+    
+    /* 添加教育经历样式 */
+    .education-item {
+        margin-bottom: 25px;
+        position: relative;
+    }
+    
+    .education-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 12px;
+    }
+    
+    .education-school {
+        font-weight: 600;
+        color: #343a40;
+        font-size: 1.1em;
+    }
+    
+    .education-period {
+        color: #007bff;
+        font-size: 0.9em;
+        font-weight: 500;
+    }
+    
+    .education-degree {
+        color: #495057;
+        font-weight: 500;
+        font-style: italic;
+        margin-bottom: 10px;
+    }
+    
+    .education-description {
+        color: #6c757d;
+        margin-bottom: 15px;
+        line-height: 1.5;
+    }
+    
+    .education-achievement {
+        background-color: #f8f9fa;
+        border-left: 3px solid #007bff;
+        padding: 12px 15px;
+        margin-top: 10px;
+        border-radius: 0 5px 5px 0;
+    }
+    
+    .education-achievement-title {
+        font-weight: 500;
+        color: #343a40;
+        margin-bottom: 8px;
+    }
+    
+    .education-list {
+        list-style-type: none;
+        padding-left: 5px;
+        margin-bottom: 0;
+    }
+    
+    .education-list li {
+        position: relative;
+        padding-left: 20px;
+        margin-bottom: 8px;
+        line-height: 1.4;
+    }
+    
+    .education-list li:before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 8px;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background-color: #007bff;
+    }
+    
+    /* 导师卡片样式 */
+    .mentor-section {
+        margin-top: 30px;
+    }
+    
+    .mentor-grid {
+        display: flex;
+        flex-wrap: wrap;
+        margin: -10px;
+    }
+    
+    .mentor-card {
+        flex: 0 0 calc(33.333% - 20px);
+        margin: 10px;
+        padding: 15px;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+    }
+    
+    .mentor-card:hover {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        transform: translateY(-3px);
+    }
+    
+    .mentor-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+    
+    .mentor-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background-color: #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 12px;
+        font-weight: 600;
+        color: #495057;
+        font-size: 1.1em;
+    }
+    
+    .mentor-name {
+        font-weight: 600;
+        color: #343a40;
+        margin-bottom: 3px;
+    }
+    
+    .mentor-institution {
+        font-size: 0.85em;
+        color: #6c757d;
+    }
+    
+    .mentor-research {
+        margin: 10px 0;
+        color: #495057;
+        font-size: 0.9em;
+        line-height: 1.5;
+    }
+    
+    .mentor-research strong {
+        color: #343a40;
+    }
+    
+    .mentor-bio {
+        font-size: 0.85em;
+        color: #6c757d;
+        line-height: 1.6;
+    }
+    
+    @media (max-width: 991px) {
+        .mentor-card {
+            flex: 0 0 calc(50% - 20px);
+        }
+    }
+    
+    @media (max-width: 575px) {
+        .mentor-card {
+            flex: 0 0 calc(100% - 20px);
+        }
+    }
+</style>
+{% endblock head_extend %}
+
+{% block content %}
+<!-- HR引导模态框 -->
+<div class="modal fade hr-guide-modal" id="hrGuideModal" tabindex="-1" role="dialog" aria-labelledby="hrGuideModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="hrGuideModalLabel">
+                    <i class="fas fa-user-tie mr-2"></i>欢迎查看简历
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted">您是HR或招聘人员吗？这里有一些功能可能对您有帮助：</p>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="feature-text">
+                        <h5>AI智能问答</h5>
+                        <p>您可以直接询问关于我的技能和经验的问题，AI助手将为您提供即时回答。</p>
+                    </div>
+                </div>
+                
+                <div class="feature-example">
+                    <div class="mb-2"><strong>示例问题：</strong></div>
+                    <ul class="mb-0">
+                        <li>"你熟悉Spring框架吗？"</li>
+                        <li>"你有哪些Android开发经验？"</li>
+                        <li>"你的项目中使用了哪些云服务？"</li>
+                    </ul>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="fas fa-file-download"></i>
+                    </div>
+                    <div class="feature-text">
+                        <h5>简历下载</h5>
+                        <p>您可以下载完整版简历PDF文件，方便线下查看或分享给团队成员。</p>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-4">
+                    <button type="button" class="btn btn-primary btn-close-modal" data-dismiss="modal">
+                        我已了解，查看简历
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 添加智能客服引导提示 -->
+<div class="ai-guide-tooltip" id="aiGuideTooltip">
+    <button class="close-tooltip" id="closeTooltip">
+        <i class="fas fa-times"></i>
+    </button>
+    <p class="mb-0">
+        <i class="fas fa-lightbulb text-warning mr-2"></i>
+        有任何简历相关问题？点击下方智能客服按钮，我会立即为您解答！
+    </p>
+</div>
+
+<div class="container py-5 cv-container">
+    <!-- 个人信息卡片 -->
+    <div class="profile-card animate__animated animate__fadeIn">
+        <div class="row">
+            <div class="col-lg-8 profile-info-col">
+                <div class="row">
+                    <div class="col-md-4 profile-image-container">
+                        <div class="profile-image">
+                            {% if profile.avatar %}
+                                <img src="{{ profile.avatar.url }}" alt="{{ user.username }}">
+                            {% else %}
+                                <img src="{% static 'images/default-avatar.png' %}" alt="默认头像">
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <h1 class="profile-name">陈杰腾</h1>
+                        <p class="profile-title">期望岗位：全栈开发、智能体开发、技术支持等</p>
+                        <p class="profile-bio">
+                            熟悉Java、Python、安卓移动端开发、Web开发，满足公司业务顺利开发的能力。在多个平台的云端中部署过互联网相关项目。通读英语文献，会流利英语。平时热爱研究智能体相关应用，不断了解NLP、AIGC、智能体与传统互联网行业的集成应用及发展动向，喜欢尝试多平台集成，同时不忘学习新技术栈。
+                        </p>
+                        
+                        <div class="profile-availability">
+                            <i class="fas fa-check-circle mr-1"></i> 待业中，可随时入职
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 两列信息布局 -->
+                <div class="row profile-info-container">
+                    <!-- 左侧信息列 -->
+                    <div class="col-md-6 profile-info-left">
+                        <div class="profile-details">
+                            <div class="profile-details-item">
+                                <div class="profile-details-icon">
+                                    <i class="fas fa-envelope"></i>
+                                </div>
+                                <div class="profile-details-content">
+                                    1150964115@qq.com
+                                </div>
+                            </div>
+                            
+                            <div class="profile-details-item">
+                                <div class="profile-details-icon">
+                                    <i class="fas fa-phone-alt"></i>
+                                </div>
+                                <div class="profile-details-content">
+                                    暂不开放
+                                </div>
+                            </div>
+                            
+                            <div class="profile-details-item">
+                                <div class="profile-details-icon">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                </div>
+                                <div class="profile-details-content">
+                                    居住地：中国·广东/重庆
+                                </div>
+                            </div>
+                            
+                            <div class="profile-details-item">
+                                <div class="profile-details-icon">
+                                    <i class="fas fa-graduation-cap"></i>
+                                </div>
+                                <div class="profile-details-content profile-education">
+                                    <span class="profile-education-school">约克大学（加拿大）</span>
+                                    <span class="profile-education-degree">信息技术（Information Technology, IT），荣誉学士</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 右侧信息列 -->
+                    <div class="col-md-6 profile-info-right">
+                        <div class="profile-details">
+                            <div class="profile-details-item">
+                                <div class="profile-details-icon">
+                                    <i class="fab fa-github"></i>
+                                </div>
+                                <div class="profile-details-content">
+                                    <a href="https://github.com/Chen-Jieteng" target="_blank">@Chen-Jieteng</a>
+                                </div>
+                            </div>
+                            
+                            <div class="profile-details-item">
+                                <div class="profile-details-icon">
+                                    <i class="fas fa-building"></i>
+                                </div>
+                                <div class="profile-details-content">
+                                    <div><strong>首选就业城市</strong></div>
+                                    <div class="mt-1">
+                                        <span class="profile-tag highlight">北京</span>
+                                        <span class="profile-tag highlight">上海</span>
+                                        <span class="profile-tag highlight">成都</span>
+                                        <span class="profile-tag highlight">重庆</span>
+                                        <span class="profile-tag highlight">深圳</span>
+                                        <span class="profile-tag highlight">广州</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="profile-details-item">
+                                <div class="profile-details-icon">
+                                    <i class="fas fa-exchange-alt"></i>
+                                </div>
+                                <div class="profile-details-content">
+                                    <div><strong>接受调剂城市</strong></div>
+                                    <div class="mt-1">
+                                        <span class="profile-tag">西安</span>
+                                        <span class="profile-tag">天津</span>
+                                        <span class="profile-tag">武汉</span>
+                                        <span class="profile-tag">苏州</span>
+                                        <span class="profile-tag">其他城市均可商量</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 profile-chart-col">
+                <div class="radar-container">
+                    <div class="radar-chart-container">
+                        <canvas id="radarChart"></canvas>
+                    </div>
+                    <div class="radar-legend">
+                        <div class="radar-legend-item">
+                            <div class="radar-legend-color" style="background-color: rgba(255, 99, 132, 0.8);"></div>
+                            <div class="radar-legend-text">个人水平</div>
+                        </div>
+                        <div class="radar-legend-item">
+                            <div class="radar-legend-color" style="background-color: rgba(54, 162, 235, 0.8);"></div>
+                            <div class="radar-legend-text">全国初级-中级开发者平均水平</div>
+                        </div>
+                    </div>
+                    <div class="radar-note">
+                        蜘蛛网结果由DeepSeek R1分析个人数据后生成，仅供HR参考。
+                    </div>
+                    <div class="radar-note secondary">
+                        平均数据非实时，实时数据监测个人水平系统正在开发。数据来源：公共调研，调研样本：1年-5年经验开发者（学历不限）调研，信息整合由DeepSeek完成。
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 主要内容树形结构 -->
+    <div class="tree-container">
+        <div class="tree">
+            <!-- 技能部分 -->
+            <div class="tree-section animate__animated animate__fadeInUp">
+                <h2 class="tree-title">专业技能 & 软技能</h2>
+                <div class="tree-item">
+                    <!-- 编程语言 -->
+                    <h4 class="skill-title" data-toggle="collapse" data-target="#programming-languages" aria-expanded="true">
+                        编程语言
+                        <i class="fas fa-chevron-down"></i>
+                    </h4>
+                    <div id="programming-languages" class="collapse show skill-content">
+                        <div class="row skill-progress-container">
+                            <div class="col-md-4 skill-col">
+                                <div class="skill-item-with-progress">
+                                    <span class="skill-name">Java</span>
+                                    <div class="skill-level-bar">
+                                        <div class="skill-level-progress" style="width: 75%;"></div>
+                                    </div>
+                                    <div class="skill-level-labels">
+                                        <span class="skill-level-label">认识</span>
+                                        <span class="skill-level-label">初级</span>
+                                        <span class="skill-level-label">熟悉</span>
+                                        <span class="skill-level-label">精通</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 skill-col">
+                                <div class="skill-item-with-progress">
+                                    <span class="skill-name">Python</span>
+                                    <div class="skill-level-bar">
+                                        <div class="skill-level-progress" style="width: 75%;"></div>
+                                    </div>
+                                    <div class="skill-level-labels">
+                                        <span class="skill-level-label">认识</span>
+                                        <span class="skill-level-label">初级</span>
+                                        <span class="skill-level-label">熟悉</span>
+                                        <span class="skill-level-label">精通</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 skill-col">
+                                <div class="skill-item-with-progress">
+                                    <span class="skill-name">Kotlin</span>
+                                    <div class="skill-level-bar">
+                                        <div class="skill-level-progress" style="width: 50%;"></div>
+                                    </div>
+                                    <div class="skill-level-labels">
+                                        <span class="skill-level-label">认识</span>
+                                        <span class="skill-level-label">初级</span>
+                                        <span class="skill-level-label">熟悉</span>
+                                        <span class="skill-level-label">精通</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row skill-progress-container">
+                            <div class="col-md-4 skill-col">
+                                <div class="skill-item-with-progress">
+                                    <span class="skill-name">C语言</span>
+                                    <div class="skill-level-bar">
+                                        <div class="skill-level-progress" style="width: 75%;"></div>
+                                    </div>
+                                    <div class="skill-level-labels">
+                                        <span class="skill-level-label">认识</span>
+                                        <span class="skill-level-label">初级</span>
+                                        <span class="skill-level-label">熟悉</span>
+                                        <span class="skill-level-label">精通</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 skill-col">
+                                <div class="skill-item-with-progress">
+                                    <span class="skill-name">C++</span>
+                                    <div class="skill-level-bar">
+                                        <div class="skill-level-progress" style="width: 30%;"></div>
+                                    </div>
+                                    <div class="skill-level-labels">
+                                        <span class="skill-level-label">认识</span>
+                                        <span class="skill-level-label">初级</span>
+                                        <span class="skill-level-label">熟悉</span>
+                                        <span class="skill-level-label">精通</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 skill-col">
+                                <div class="skill-item-with-progress">
+                                    <span class="skill-name">SQL</span>
+                                    <div class="skill-level-bar">
+                                        <div class="skill-level-progress" style="width: 75%;"></div>
+                                    </div>
+                                    <div class="skill-level-labels">
+                                        <span class="skill-level-label">认识</span>
+                                        <span class="skill-level-label">初级</span>
+                                        <span class="skill-level-label">熟悉</span>
+                                        <span class="skill-level-label">精通</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 前端开发 -->
+                    <h4 class="skill-title collapsed" data-toggle="collapse" data-target="#frontend-dev" aria-expanded="false">
+                        前端开发
+                        <i class="fas fa-chevron-down"></i>
+                    </h4>
+                    <div id="frontend-dev" class="collapse skill-content">
+                        <div class="row skill-progress-container">
+                            <div class="col-md-4 skill-col">
+                                <div class="skill-item-with-progress">
+                                    <span class="skill-name">Android</span>
+                                    <div class="skill-level-bar">
+                                        <div class="skill-level-progress" style="width: 40%;"></div>
+                                    </div>
+                                    <div class="skill-level-labels">
+                                        <span class="skill-level-label">认识</span>
+                                        <span class="skill-level-label">初级</span>
+                                        <span class="skill-level-label">熟悉</span>
+                                        <span class="skill-level-label">精通</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 skill-col">
+                                <div class="skill-item-with-progress">
+                                    <span class="skill-name">Jetpack</span>
+                                    <div class="skill-level-bar">
+                                        <div class="skill-level-progress" style="width: 40%;"></div>
+                                    </div>
+                                    <div class="skill-level-labels">
+                                        <span class="skill-level-label">认识</span>
+                                        <span class="skill-level-label">初级</span>
+                                        <span class="skill-level-label">熟悉</span>
+                                        <span class="skill-level-label">精通</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 skill-col">
+                                <div class="skill-item-with-progress">
+                                    <span class="skill-name">React</span>
+                                    <div class="skill-level-bar">
+                                        <div class="skill-level-progress" style="width: 50%;"></div>
+                                    </div>
+                                    <div class="skill-level-labels">
+                                        <span class="skill-level-label">认识</span>
+                                        <span class="skill-level-label">初级</span>
+                                        <span class="skill-level-label">熟悉</span>
+                                        <span class="skill-level-label">精通</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 后端技术 -->
+                    <h4 class="skill-title collapsed" data-toggle="collapse" data-target="#backend-tech" aria-expanded="false">
+                        后端技术
+                        <i class="fas fa-chevron-down"></i>
+                    </h4>
+                    <div id="backend-tech" class="collapse skill-content">
+                        <div class="row skill-progress-container">
+                            <div class="col-md-4 skill-col">
+                                <div class="skill-item-with-progress">
+                                    <span class="skill-name">Spring</span>
+                                    <div class="skill-level-bar">
+                                        <div class="skill-level-progress" style="width: 75%;"></div>
+                                    </div>
+                                    <div class="skill-level-labels">
+                                        <span class="skill-level-label">认识</span>
+                                        <span class="skill-level-label">初级</span>
+                                        <span class="skill-level-label">熟悉</span>
+                                        <span class="skill-level-label">精通</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 skill-col">
+                                <div class="skill-item-with-progress">
+                                    <span class="skill-name">Spring Boot</span>
+                                    <div class="skill-level-bar">
+                                        <div class="skill-level-progress" style="width: 75%;"></div>
+                                    </div>
+                                    <div class="skill-level-labels">
+                                        <span class="skill-level-label">认识</span>
+                                        <span class="skill-level-label">初级</span>
+                                        <span class="skill-level-label">熟悉</span>
+                                        <span class="skill-level-label">精通</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 skill-col">
+                                <div class="skill-item-with-progress">
+                                    <span class="skill-name">Spring Security</span>
+                                    <div class="skill-level-bar">
+                                        <div class="skill-level-progress" style="width: 75%;"></div>
+                                    </div>
+                                    <div class="skill-level-labels">
+                                        <span class="skill-level-label">认识</span>
+                                        <span class="skill-level-label">初级</span>
+                                        <span class="skill-level-label">熟悉</span>
+                                        <span class="skill-level-label">精通</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row skill-progress-container">
+                            <div class="col-md-4 skill-col">
+                                <div class="skill-item-with-progress">
+                                    <span class="skill-name">Spring Data JPA</span>
+                                    <div class="skill-level-bar">
+                                        <div class="skill-level-progress" style="width: 75%;"></div>
+                                    </div>
+                                    <div class="skill-level-labels">
+                                        <span class="skill-level-label">认识</span>
+                                        <span class="skill-level-label">初级</span>
+                                        <span class="skill-level-label">熟悉</span>
+                                        <span class="skill-level-label">精通</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 skill-col">
+                                <div class="skill-item-with-progress">
+                                    <span class="skill-name">Django</span>
+                                    <div class="skill-level-bar">
+                                        <div class="skill-level-progress" style="width: 75%;"></div>
+                                    </div>
+                                    <div class="skill-level-labels">
+                                        <span class="skill-level-label">认识</span>
+                                        <span class="skill-level-label">初级</span>
+                                        <span class="skill-level-label">熟悉</span>
+                                        <span class="skill-level-label">精通</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 skill-col">
+                                <div class="skill-item-with-progress">
+                                    <span class="skill-name">FastAPI</span>
+                                    <div class="skill-level-bar">
+                                        <div class="skill-level-progress" style="width: 50%;"></div>
+                                    </div>
+                                    <div class="skill-level-labels">
+                                        <span class="skill-level-label">认识</span>
+                                        <span class="skill-level-label">初级</span>
+                                        <span class="skill-level-label">熟悉</span>
+                                        <span class="skill-level-label">精通</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 数据库 & 云服务 -->
+                    <h4 class="skill-title collapsed" data-toggle="collapse" data-target="#database-cloud" aria-expanded="false">
+                        数据库 & 云服务
+                        <i class="fas fa-chevron-down"></i>
+                    </h4>
+                    <div id="database-cloud" class="collapse skill-content">
+                        <div class="row skill-progress-container">
+                            <div class="col-md-4 skill-col">
+                                <div class="skill-item-with-progress">
+                                    <span class="skill-name">PostgreSQL</span>
+                                    <div class="skill-level-bar">
+                                        <div class="skill-level-progress" style="width: 75%;"></div>
+                                    </div>
+                                    <div class="skill-level-labels">
+                                        <span class="skill-level-label">认识</span>
+                                        <span class="skill-level-label">初级</span>
+                                        <span class="skill-level-label">熟悉</span>
+                                        <span class="skill-level-label">精通</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 skill-col">
+                                <div class="skill-item-with-progress">
+                                    <span class="skill-name">MySQL</span>
+                                    <div class="skill-level-bar">
+                                        <div class="skill-level-progress" style="width: 75%;"></div>
+                                    </div>
+                                    <div class="skill-level-labels">
+                                        <span class="skill-level-label">认识</span>
+                                        <span class="skill-level-label">初级</span>
+                                        <span class="skill-level-label">熟悉</span>
+                                        <span class="skill-level-label">精通</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 skill-col">
+                                <div class="skill-item-with-progress">
+                                    <span class="skill-name">Redis</span>
+                                    <div class="skill-level-bar">
+                                        <div class="skill-level-progress" style="width: 50%;"></div>
+                                    </div>
+                                    <div class="skill-level-labels">
+                                        <span class="skill-level-label">认识</span>
+                                        <span class="skill-level-label">初级</span>
+                                        <span class="skill-level-label">熟悉</span>
+                                        <span class="skill-level-label">精通</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row skill-progress-container">
+                            <div class="col-md-4 skill-col">
+                                <div class="skill-item-with-progress">
+                                    <span class="skill-name">云部署（ECS，RDS，EC2等）</span>
+                                    <div class="skill-level-bar">
+                                        <div class="skill-level-progress" style="width: 58%;"></div>
+                                    </div>
+                                    <div class="skill-level-labels">
+                                        <span class="skill-level-label">认识</span>
+                                        <span class="skill-level-label">初级</span>
+                                        <span class="skill-level-label">熟悉</span>
+                                        <span class="skill-level-label">精通</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 skill-col">
+                                <div class="skill-item-with-progress">
+                                    <span class="skill-name">嵌入式</span>
+                                    <div class="skill-level-bar">
+                                        <div class="skill-level-progress" style="width: 30%;"></div>
+                                    </div>
+                                    <div class="skill-level-labels">
+                                        <span class="skill-level-label">认识</span>
+                                        <span class="skill-level-label">初级</span>
+                                        <span class="skill-level-label">熟悉</span>
+                                        <span class="skill-level-label">精通</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 skill-col">
+                                <div class="skill-item-with-progress">
+                                    <span class="skill-name">数据分析</span>
+                                    <div class="skill-level-bar">
+                                        <div class="skill-level-progress" style="width: 35%;"></div>
+                                    </div>
+                                    <div class="skill-level-labels">
+                                        <span class="skill-level-label">认识</span>
+                                        <span class="skill-level-label">初级</span>
+                                        <span class="skill-level-label">熟悉</span>
+                                        <span class="skill-level-label">精通</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 人工智能 -->
+                    <h4 class="skill-title collapsed" data-toggle="collapse" data-target="#ai-tech" aria-expanded="false">
+                        人工智能
+                        <i class="fas fa-chevron-down"></i>
+                    </h4>
+                    <div id="ai-tech" class="collapse skill-content">
+                        <div class="row skill-progress-container">
+                            <div class="col-md-4 skill-col">
+                                <div class="skill-item-with-progress">
+                                    <span class="skill-name">LangChain</span>
+                                    <div class="skill-level-bar">
+                                        <div class="skill-level-progress" style="width: 75%;"></div>
+                                    </div>
+                                    <div class="skill-level-labels">
+                                        <span class="skill-level-label">认识</span>
+                                        <span class="skill-level-label">初级</span>
+                                        <span class="skill-level-label">熟悉</span>
+                                        <span class="skill-level-label">精通</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 skill-col">
+                                <div class="skill-item-with-progress">
+                                    <span class="skill-name">NLP应用</span>
+                                    <div class="skill-level-bar">
+                                        <div class="skill-level-progress" style="width: 20%;"></div>
+                                    </div>
+                                    <div class="skill-level-labels">
+                                        <span class="skill-level-label">认识</span>
+                                        <span class="skill-level-label">初级</span>
+                                        <span class="skill-level-label">熟悉</span>
+                                        <span class="skill-level-label">精通</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 skill-col">
+                                <div class="skill-item-with-progress">
+                                    <span class="skill-name">智能体开发</span>
+                                    <div class="skill-level-bar">
+                                        <div class="skill-level-progress" style="width: 50%;"></div>
+                                    </div>
+                                    <div class="skill-level-labels">
+                                        <span class="skill-level-label">认识</span>
+                                        <span class="skill-level-label">初级</span>
+                                        <span class="skill-level-label">熟悉</span>
+                                        <span class="skill-level-label">精通</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row skill-progress-container">
+                            <div class="col-md-4 skill-col">
+                                <div class="skill-item-with-progress">
+                                    <span class="skill-name">计算机视觉</span>
+                                    <div class="skill-level-bar">
+                                        <div class="skill-level-progress" style="width: 15%;"></div>
+                                    </div>
+                                    <div class="skill-level-labels">
+                                        <span class="skill-level-label">认识</span>
+                                        <span class="skill-level-label">初级</span>
+                                        <span class="skill-level-label">熟悉</span>
+                                        <span class="skill-level-label">精通</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 skill-col">
+                                <div class="skill-item-with-progress">
+                                    <span class="skill-name">PyTorch</span>
+                                    <div class="skill-level-bar">
+                                        <div class="skill-level-progress" style="width: 20%;"></div>
+                                    </div>
+                                    <div class="skill-level-labels">
+                                        <span class="skill-level-label">认识</span>
+                                        <span class="skill-level-label">初级</span>
+                                        <span class="skill-level-label">熟悉</span>
+                                        <span class="skill-level-label">精通</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 skill-col">
+                                <div class="skill-item-with-progress">
+                                    <span class="skill-name">大模型微调</span>
+                                    <div class="skill-level-bar">
+                                        <div class="skill-level-progress" style="width: 20%;"></div>
+                                    </div>
+                                    <div class="skill-level-labels">
+                                        <span class="skill-level-label">认识</span>
+                                        <span class="skill-level-label">初级</span>
+                                        <span class="skill-level-label">熟悉</span>
+                                        <span class="skill-level-label">精通</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 软技能部分 -->
+                    <h4 class="skill-title collapsed" data-toggle="collapse" data-target="#soft-skills" aria-expanded="false">
+                        软技能
+                        <i class="fas fa-chevron-down"></i>
+                    </h4>
+                    <div id="soft-skills" class="collapse skill-content">
+                        <!-- 语言能力 -->
+                        <h5 class="mb-3">语言能力</h5>
+                        <div class="row skill-progress-container">
+                            <div class="col-md-4 skill-col">
+                                <div class="skill-item-with-progress">
+                                    <span class="skill-name">中文</span>
+                                    <div class="skill-level-bar">
+                                        <div class="skill-level-progress" style="width: 100%;"></div>
+                                    </div>
+                                    <div class="skill-level-labels">
+                                        <span class="skill-level-label">认识</span>
+                                        <span class="skill-level-label">初级</span>
+                                        <span class="skill-level-label">熟悉</span>
+                                        <span class="skill-level-label">精通</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 skill-col">
+                                <div class="skill-item-with-progress">
+                                    <span class="skill-name">英语</span>
+                                    <div class="skill-level-bar">
+                                        <div class="skill-level-progress" style="width: 90%;"></div>
+                                    </div>
+                                    <div class="skill-level-labels">
+                                        <span class="skill-level-label">认识</span>
+                                        <span class="skill-level-label">初级</span>
+                                        <span class="skill-level-label">熟悉</span>
+                                        <span class="skill-level-label">精通</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 skill-col">
+                                <div class="skill-item-with-progress">
+                                    <span class="skill-name">日语</span>
+                                    <div class="skill-level-bar">
+                                        <div class="skill-level-progress" style="width: 15%;"></div>
+                                    </div>
+                                    <div class="skill-level-labels">
+                                        <span class="skill-level-label">认识</span>
+                                        <span class="skill-level-label">初级</span>
+                                        <span class="skill-level-label">熟悉</span>
+                                        <span class="skill-level-label">精通</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row skill-progress-container">
+                            <div class="col-md-4 skill-col">
+                                <div class="skill-item-with-progress">
+                                    <span class="skill-name">阿拉伯语</span>
+                                    <div class="skill-level-bar">
+                                        <div class="skill-level-progress" style="width: 5%;"></div>
+                                    </div>
+                                    <div class="skill-level-labels">
+                                        <span class="skill-level-label">认识</span>
+                                        <span class="skill-level-label">初级</span>
+                                        <span class="skill-level-label">熟悉</span>
+                                        <span class="skill-level-label">精通</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 skill-col">
+                                <div class="skill-item-with-progress">
+                                    <span class="skill-name">葡萄牙语</span>
+                                    <div class="skill-level-bar">
+                                        <div class="skill-level-progress" style="width: 5%;"></div>
+                                    </div>
+                                    <div class="skill-level-labels">
+                                        <span class="skill-level-label">认识</span>
+                                        <span class="skill-level-label">初级</span>
+                                        <span class="skill-level-label">熟悉</span>
+                                        <span class="skill-level-label">精通</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 理科思维 -->
+                        <h5 class="mb-3 mt-4">理科思维</h5>
+                        <div class="row skill-progress-container">
+                            <div class="col-md-4 skill-col">
+                                <div class="skill-item-with-progress">
+                                    <span class="skill-name">高等数学</span>
+                                    <div class="skill-level-bar">
+                                        <div class="skill-level-progress" style="width: 50%;"></div>
+                                    </div>
+                                    <div class="skill-level-labels">
+                                        <span class="skill-level-label">认识</span>
+                                        <span class="skill-level-label">初级</span>
+                                        <span class="skill-level-label">熟悉</span>
+                                        <span class="skill-level-label">精通</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 skill-col">
+                                <div class="skill-item-with-progress">
+                                    <span class="skill-name">大学物理</span>
+                                    <div class="skill-level-bar">
+                                        <div class="skill-level-progress" style="width: 50%;"></div>
+                                    </div>
+                                    <div class="skill-level-labels">
+                                        <span class="skill-level-label">认识</span>
+                                        <span class="skill-level-label">初级</span>
+                                        <span class="skill-level-label">熟悉</span>
+                                        <span class="skill-level-label">精通</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 其他技能 -->
+                        <h5 class="mb-3 mt-4">其他技能</h5>
+                        <div class="row skill-progress-container">
+                            <div class="col-md-4 skill-col">
+                                <div class="skill-item-with-progress">
+                                    <span class="skill-name">绘画</span>
+                                    <div class="skill-level-bar">
+                                        <div class="skill-level-progress" style="width: 75%;"></div>
+                                    </div>
+                                    <div class="skill-level-labels">
+                                        <span class="skill-level-label">认识</span>
+                                        <span class="skill-level-label">初级</span>
+                                        <span class="skill-level-label">熟悉</span>
+                                        <span class="skill-level-label">精通</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 skill-col">
+                                <div class="skill-item-with-progress">
+                                    <span class="skill-name">羽毛球</span>
+                                    <div class="skill-level-bar">
+                                        <div class="skill-level-progress" style="width: 50%;"></div>
+                                    </div>
+                                    <div class="skill-level-labels">
+                                        <span class="skill-level-label">认识</span>
+                                        <span class="skill-level-label">初级</span>
+                                        <span class="skill-level-label">熟悉</span>
+                                        <span class="skill-level-label">精通</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 skill-col">
+                                <div class="skill-item-with-progress">
+                                    <span class="skill-name">乒乓球</span>
+                                    <div class="skill-level-bar">
+                                        <div class="skill-level-progress" style="width: 75%;"></div>
+                                    </div>
+                                    <div class="skill-level-labels">
+                                        <span class="skill-level-label">认识</span>
+                                        <span class="skill-level-label">初级</span>
+                                        <span class="skill-level-label">熟悉</span>
+                                        <span class="skill-level-label">精通</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row skill-progress-container">
+                            <div class="col-md-4 skill-col">
+                                <div class="skill-item-with-progress">
+                                    <span class="skill-name">篮球</span>
+                                    <div class="skill-level-bar">
+                                        <div class="skill-level-progress" style="width: 20%;"></div>
+                                    </div>
+                                    <div class="skill-level-labels">
+                                        <span class="skill-level-label">认识</span>
+                                        <span class="skill-level-label">初级</span>
+                                        <span class="skill-level-label">熟悉</span>
+                                        <span class="skill-level-label">精通</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 skill-col">
+                                <div class="skill-item-with-progress">
+                                    <span class="skill-name">足球</span>
+                                    <div class="skill-level-bar">
+                                        <div class="skill-level-progress" style="width: 30%;"></div>
+                                    </div>
+                                    <div class="skill-level-labels">
+                                        <span class="skill-level-label">认识</span>
+                                        <span class="skill-level-label">初级</span>
+                                        <span class="skill-level-label">熟悉</span>
+                                        <span class="skill-level-label">精通</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 项目经历 -->
+            <div class="tree-section animate__animated animate__fadeInUp" style="animation-delay: 0.2s;">
+                <h2 class="tree-title">项目经历</h2>
+                
+                <!-- 项目1 -->
+                <div class="tree-item">
+                    <div class="tree-item-title">基于安卓平台的生活管理智能体APP</div>
+                    <div class="tree-item-subtitle">全栈开发工程师</div>
+                    <div class="tree-item-desc">
+                        <p><strong>项目简介：</strong>基于安卓平台的生活管理智能体APP，集成AI接口，可实现与DeepSeek/GPT等模型的对接，AI托管并分析用户数据来实现不限于对日常规划、健康监测、财富管理在内的智能管理。</p>
+                        
+                        <p><strong>技术栈：</strong>基于Kotlin和Compose构建Android前端，整个安卓APP采用MVVM架构，集成Room、Retrofit和Hilt；后端采用Spring + Spring Boot 3.2.3框架，使用Spring MVC+React搭建用户管理系统，结合Spring Security、Spring Data JPA和MyBatis对用户数据进行控制。数据库使用PostgreSQL，短期缓存用Redis、长期数据用ElasticSearch，云端部署使用了阿里云的ECS、Tair、PolarDB等，AI逻辑框架集成LangChain及FastAPI微服务架构，并且使用Milvus对AI数据进行向量搜索。</p>
+                        
+                        <p><strong>APP架构：</strong>安卓端 -> 云端（后端Spring） -> 云端数据库，ECS接微服务，微服务单独接Milvus向量数据库，后端Spring接用户管理网站。</p>
+                        
+                        <div class="text-right mt-3">
+                            <a href="{% url 'article:article_detail' 88 %}" class="btn btn-sm btn-outline-primary" target="_blank">
+                                <i class="fas fa-external-link-alt mr-1"></i>查看项目详情
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 项目2 -->
+                <div class="tree-item">
+                    <div class="tree-item-title">基于Django+MVT架构开发的技术笔记平台</div>
+                    <div class="tree-item-subtitle">后端开发工程师</div>
+                    <div class="tree-item-desc">
+                        <p><strong>项目简介：</strong>基于Django+MVT架构开发的技术笔记平台，实现文章发布、多级评论、社交登录、实时通知等功能，由用户管理系统网页对数据进行集中管理，目前网站已备案上线一年之久。</p>
+                        
+                        <p><strong>技术栈：</strong>采用Django ORM+SQL实现数据建模，通过MPTT算法优化树形评论结构查询效率，集成django-allauth实现外部平台OAuth2.0登录，使用django-notifications构建实时消息系统，消息到达率99.9%。通过Middleware层实现全局CSRF防护与XSS过滤，并部署在阿里云ECS中，保持零安全漏洞记录。前端基于Bootstrap以及媒体查询实现响应式布局，完美适配移动端，集成CKEditor富文本编辑器并定制Markdown双模式，提升用户内容创作效率40%，使用MathJax+Prism实现技术文档的公式渲染与代码高亮，通过Webpack优化静态资源加载，首屏时间<1.2s。采用缓存策略让API响应时间从800ms优化至200ms内，并内置利用django-taggit开发的热门标签系统。</p>
+                        
+                        <div class="text-right mt-3">
+                            <a href="https://github.com/Chen-Jieteng/liedwin.top" class="btn btn-sm btn-outline-dark mr-2" target="_blank">
+                                <i class="fab fa-github mr-1"></i>GitHub源码
+                            </a>
+                            <a href="{% url 'article:article_list' %}" class="btn btn-sm btn-outline-primary" target="_blank">
+                                <i class="fas fa-external-link-alt mr-1"></i>查看网站
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 教育经历 -->
+            <div class="tree-section animate__animated animate__fadeInUp" style="animation-delay: 0.4s;">
+                <h2 class="tree-title">教育经历</h2>
+                <div class="tree-item">
+                    <!-- 学校详细信息 -->
+                    <div class="education-item">
+                        <div class="education-header">
+                            <div class="education-school">约克大学（York University）</div>
+                            <div class="education-period">2019年9月 - 2023年6月</div>
+                        </div>
+                        <div class="education-degree">信息技术（Information Technology）专业，荣誉学士</div>
+                        <div class="education-description">
+                            约克大学信息技术专业是加拿大顶尖的IT教育项目之一，专注于培养学生在计算机科学、信息系统和软件开发领域的综合能力。课程设置平衡了理论知识与实践应用，为学生未来的IT职业生涯打下坚实基础。详细可了解学校官网：<a href="https://www.yorku.ca/laps/itec/future-students/why-information-technology/" target="_blank">https://www.yorku.ca/laps/itec/future-students/why-information-technology/</a>
+                        </div>
+                        
+                        <div class="education-achievement">
+                            <div class="education-achievement-title">主修课程</div>
+                            <ul class="education-list">
+                                <li>计算机编程：Java, Python, C, C++, PHP, Perl</li>
+                                <li>计算机/IT架构：与国内计算机组成原理和编译原理重合</li>
+                                <li>MATLAB编程：数值计算与科学可视化</li>
+                                <li>数据分析：统计学基础、数据可视化、描述性和推断性分析</li>
+                                <li>数据结构与算法分析：线性数据结构、树、图、排序和搜索算法</li>
+                                <li>数据库系统：SQL，NoSQL，PostgreSQL，数据库设计与优化</li>
+                                <li>Web开发与设计：HTML, CSS, JavaScript, Angular.js, React.js基础</li>
+                                <li>系统分析与设计：功能性需求分析、DFD图设计、UML建模、用例设计</li>
+                                <li>Java设计模式：面向对象设计原则、创建型模式、结构型模式、行为型模式</li>
+                                <li>网络基础：TCP/IP协议栈、网络安全、分布式网络应用、云计算基础</li>
+                                <li>系统管理：Linux系统管理、虚拟化技术、容器技术、云部署实践</li>
+                                <li>人工智能导论：机器学习基础、神经网络原理、NLP应用、决策树与支持向量机</li>
+                                <li>企业架构应用：TOGAF框架、企业IT战略规划、业务与IT对齐</li>
+                                <li>IT项目管理：敏捷方法论、Scrum框架、项目规划与风险管理</li>
+                                <li>UI/UX设计：用户体验研究、交互设计原则、Figma原型设计、可用性测试</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="education-achievement">
+                            <div class="education-achievement-title">学术成就</div>
+                            <ul class="education-list">
+                                <li>2020-约克大学生活奖</li>
+                                <li>2020夏-约克大学国际生奖学金</li>
+                                <li>2020冬-约克大学国际生奖学金</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- 研究与项目 -->
+                    <div class="mt-4">
+                        <h5 class="font-weight-bold mb-3"><i class="fas fa-file-alt text-info mr-2"></i>学校论文</h5>
+                        
+                        <div class="tree-subitem">
+                            <div class="tree-item-title">《应用回归分析和神经网络的房价预测模型》</div>
+                            <div class="tree-item-subtitle">导师：Stephen Chen</div>
+                            <div class="text-right">
+                                <a href="{% url 'article:article_detail' 124 %}" class="btn btn-sm btn-link" target="_blank">
+                                    <i class="fas fa-external-link-alt mr-1"></i>查看论文
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <div class="tree-subitem">
+                            <div class="tree-item-title">《推特信息系统分析研究》</div>
+                            <div class="tree-item-subtitle">导师：Yifan Li</div>
+                            <div class="text-right">
+                                <a href="{% url 'article:article_detail' 100 %}" class="btn btn-sm btn-link" target="_blank">
+                                    <i class="fas fa-external-link-alt mr-1"></i>查看论文
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 学校作业 -->
+                    <div class="mt-4">
+                        <h5 class="font-weight-bold mb-3"><i class="fas fa-tasks text-success mr-2"></i>学校作业</h5>
+                        
+                        <div class="tree-subitem">
+                            <div class="tree-item-title">《小型智能家居系统》</div>
+                            <div class="tree-item-subtitle">后端开发课程项目</div>
+                            <div class="text-right">
+                                <a href="{% url 'article:article_detail' 110 %}" class="btn btn-sm btn-link" target="_blank">
+                                    <i class="fas fa-external-link-alt mr-1"></i>查看项目
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <div class="tree-subitem">
+                            <div class="tree-item-title">《基于Angular.js框架的购物商城》</div>
+                            <div class="tree-item-subtitle">Web开发课程项目</div>
+                            <div class="text-right">
+                                <a href="{% url 'article:article_detail' 115 %}" class="btn btn-sm btn-link" target="_blank">
+                                    <i class="fas fa-external-link-alt mr-1"></i>查看项目
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <div class="tree-subitem">
+                            <div class="tree-item-title">《书籍网购/租借业务的DBMS》</div>
+                            <div class="tree-item-subtitle">数据库系统课程项目</div>
+                            <div class="text-right">
+                                <a href="{% url 'article:article_detail' 120 %}" class="btn btn-sm btn-link" target="_blank">
+                                    <i class="fas fa-external-link-alt mr-1"></i>查看项目
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <div class="tree-subitem">
+                            <div class="tree-item-title">《打泡泡游戏》</div>
+                            <div class="tree-item-subtitle">Java图形界面设计课程项目</div>
+                            <div class="text-right">
+                                <a href="{% url 'article:article_detail' 125 %}" class="btn btn-sm btn-link" target="_blank">
+                                    <i class="fas fa-external-link-alt mr-1"></i>查看项目
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <div class="tree-subitem">
+                            <div class="tree-item-title">《Discord管理系统及服务器搭建》</div>
+                            <div class="tree-item-subtitle">系统管理课程项目</div>
+                            <div class="text-right">
+                                <a href="{% url 'article:article_detail' 130 %}" class="btn btn-sm btn-link" target="_blank">
+                                    <i class="fas fa-external-link-alt mr-1"></i>查看项目
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <div class="tree-subitem">
+                            <div class="tree-item-title">《PubMed数据分析》</div>
+                            <div class="tree-item-subtitle">大数据分析课程项目</div>
+                            <div class="text-right">
+                                <a href="{% url 'article:article_detail' 135 %}" class="btn btn-sm btn-link" target="_blank">
+                                    <i class="fas fa-external-link-alt mr-1"></i>查看项目
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <div class="tree-subitem">
+                            <div class="tree-item-title">《大数据分析与可视化》</div>
+                            <div class="tree-item-subtitle">数据分析课程作业</div>
+                            <div class="text-right">
+                                <a href="{% url 'article:article_detail' 110 %}" class="btn btn-sm btn-link" target="_blank">
+                                    <i class="fas fa-external-link-alt mr-1"></i>查看分析
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 课程导师 -->
+                    <div class="mentor-section mt-4">
+                        <h5 class="font-weight-bold mb-3"><i class="fas fa-chalkboard-teacher text-info mr-2"></i>课程导师</h5>
+                        
+                        <div class="mentor-grid">
+                            <!-- 导师 1 -->
+                            <div class="mentor-card">
+                                <div class="mentor-header">
+                                    <div class="mentor-avatar">JH</div>
+                                    <div>
+                                        <div class="mentor-name">Jimmy Huang（黄湘冀）</div>
+                                        <div class="mentor-institution">博士，西安电子科技大学，伦敦大学等</div>
+                                    </div>
+                                </div>
+                                <div class="mentor-research">
+                                    <strong>研究方向：</strong>信息检索、数据挖掘、自然语言处理
+                                </div>
+                                <div class="mentor-bio">
+                                    英国伦敦大学博士，约克大学终身正教授、大数据分析一级教授，2025年IEEE Fellow，2017年ACM杰出科学家。任ACM CIKM/SIGIR大会主席，获加拿大青年创新奖、首席教授，NSERC/SSHRC评审专家。青年时期参与过国内早期中文信息处理研究中心的UNDP项目。
+                                </div>
+                            </div>
+                            
+                            <!-- 导师 2 -->
+                            <div class="mentor-card">
+                                <div class="mentor-header">
+                                    <div class="mentor-avatar">SC</div>
+                                    <div>
+                                        <div class="mentor-name">Stephen Chen</div>
+                                        <div class="mentor-institution">博士，滑铁卢大学</div>
+                                    </div>
+                                </div>
+                                <div class="mentor-research">
+                                    <strong>研究方向：</strong>进化计算、人工智能、预测建模
+                                </div>
+                                <div class="mentor-bio">
+                                    约克大学信息技术副教授，专注于计算智能和机器学习算法研究。在进化计算领域拥有丰富经验，带领学生完成多个实际AI应用项目。
+                                </div>
+                            </div>
+                            
+                            <!-- 导师 3 -->
+                            <div class="mentor-card">
+                                <div class="mentor-header">
+                                    <div class="mentor-avatar">AS</div>
+                                    <div>
+                                        <div class="mentor-name">Arik Senderovich</div>
+                                        <div class="mentor-institution">博士，以色列理工学院</div>
+                                    </div>
+                                </div>
+                                <div class="mentor-research">
+                                    <strong>研究方向：</strong>数据科学、过程挖掘、运筹学
+                                </div>
+                                <div class="mentor-bio">
+                                    约克大学舒立克商学院助理教授，专注于数据驱动决策和业务流程优化。曾在工业领域应用数据科学解决实际问题，拥有丰富的业界经验。
+                                </div>
+                            </div>
+                            
+                            <!-- 导师 4 -->
+                            <div class="mentor-card">
+                                <div class="mentor-header">
+                                    <div class="mentor-avatar">YB</div>
+                                    <div>
+                                        <div class="mentor-name">Younes Benslimane</div>
+                                        <div class="mentor-institution">博士，约克大学</div>
+                                    </div>
+                                </div>
+                                <div class="mentor-research">
+                                    <strong>研究方向：</strong>软件工程、数据库系统、系统分析
+                                </div>
+                                <div class="mentor-bio">
+                                    约克大学信息技术学院副教授，专注于软件工程和数据库系统研究。在IT项目管理和系统开发方面拥有丰富经验，是多门核心课程的主要讲师。
+                                </div>
+                            </div>
+                            
+                            <!-- 导师 5 -->
+                            <div class="mentor-card">
+                                <div class="mentor-header">
+                                    <div class="mentor-avatar">ME</div>
+                                    <div>
+                                        <div class="mentor-name">Marina Erechtchoukova</div>
+                                        <div class="mentor-institution">博士，俄罗斯科学院</div>
+                                    </div>
+                                </div>
+                                <div class="mentor-research">
+                                    <strong>研究方向：</strong>环境信息系统、模型模拟、决策支持系统
+                                </div>
+                                <div class="mentor-bio">
+                                    约克大学信息技术教授，专注于环境信息系统和计算模型研究。在数据建模和计算机模拟领域拥有超过20年经验，指导多个跨学科研究项目。
+                                </div>
+                            </div>
+                            
+                            <!-- 导师 6 -->
+                            <div class="mentor-card">
+                                <div class="mentor-header">
+                                    <div class="mentor-avatar">SL</div>
+                                    <div>
+                                        <div class="mentor-name">Sotirios Liaskos</div>
+                                        <div class="mentor-institution">博士，多伦多大学</div>
+                                    </div>
+                                </div>
+                                <div class="mentor-research">
+                                    <strong>研究方向：</strong>需求工程、软件建模、人工智能系统
+                                </div>
+                                <div class="mentor-bio">
+                                    约克大学信息技术副教授，专注于软件需求工程和智能系统设计。研究如何将用户需求有效转化为软件规格说明，在软件设计方法论领域具有显著贡献。
+                                </div>
+                            </div>
+                            
+                            <!-- 导师 7 -->
+                            <div class="mentor-card">
+                                <div class="mentor-header">
+                                    <div class="mentor-avatar">CB</div>
+                                    <div>
+                                        <div class="mentor-name">Christopher Bergevin</div>
+                                        <div class="mentor-institution">博士，麻省理工学院</div>
+                                    </div>
+                                </div>
+                                <div class="mentor-research">
+                                    <strong>研究方向：</strong>物理声学、生物物理学、计算物理
+                                </div>
+                                <div class="mentor-bio">
+                                    约克大学物理学教授，麻省理工学院毕业。专注于跨学科研究，结合物理学与计算机科学原理，在声学和声波信号处理领域有深入研究。指导学生将物理模型应用于声音信号分析和音频处理系统开发。
+                                </div>
+                            </div>
+                            
+                            <!-- 添加Yifan Li导师 -->
+                            <div class="mentor-card">
+                                <div class="mentor-header">
+                                    <div class="mentor-avatar">YL</div>
+                                    <div>
+                                        <div class="mentor-name">Yifan Li</div>
+                                        <div class="mentor-institution">博士，西安交通大学</div>
+                                    </div>
+                                </div>
+                                <div class="mentor-research">
+                                    <strong>研究方向：</strong>企业级系统分析、软件工程、数据科学
+                                </div>
+                                <div class="mentor-bio">
+                                    华为前研究员，专注于社交媒体数据分析和信息系统研究。在网络行为分析和社会计算领域有丰富经验，指导学生完成多个社交媒体数据挖掘项目。
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 添加折叠功能的脚本 -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 显示HR引导模态框
+        $('#hrGuideModal').modal('show');
+        
+        // 引导使用智能客服
+        const tooltip = document.getElementById('aiGuideTooltip');
+        const closeTooltip = document.getElementById('closeTooltip');
+        const aiChatBtn = document.querySelector('.chat-toggle-btn');
+        
+        // 关闭模态框后，显示智能客服引导提示
+        $('#hrGuideModal').on('hidden.bs.modal', function() {
+            const date = new Date();
+            date.setTime(date.getTime() + (24 * 60 * 60 * 1000)); // 一天有效期
+            document.cookie = "cv_guide_shown=true; expires=" + date.toUTCString() + "; path=/";
+            
+            // 显示智能客服引导
+            setTimeout(function() {
+                tooltip.classList.add('show');
+                
+                // 让智能客服按钮呼吸闪烁
+                if (aiChatBtn) {
+                    aiChatBtn.classList.add('pulse-animation');
+                    
+                    // 动画结束后停止
+                    setTimeout(function() {
+                        aiChatBtn.classList.remove('pulse-animation');
+                    }, 4500); // 1.5s × 3次
+                }
+                
+                // 30秒后自动隐藏提示
+                setTimeout(function() {
+                    tooltip.classList.remove('show');
+                }, 30000);
+            }, 1000);
+        });
+        
+        // 关闭提示
+        closeTooltip.addEventListener('click', function() {
+            tooltip.classList.remove('show');
+        });
+        
+        // 点击智能客服按钮时也隐藏提示
+        if (aiChatBtn) {
+            aiChatBtn.addEventListener('click', function() {
+                tooltip.classList.remove('show');
+            });
+        }
+        
+        // 检查是否已经显示过
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+        }
+        
+        // 如果已经显示过，则不再显示
+        if (getCookie('cv_guide_shown')) {
+            $('#hrGuideModal').modal('hide');
+        }
+        
+        // 为技能标题添加点击事件，切换图标状态
+        const skillTitles = document.querySelectorAll('.skill-title[data-toggle="collapse"]');
+        
+        // 使用事件委托优化性能
+        document.querySelector('.tree-item').addEventListener('click', function(e) {
+            const title = e.target.closest('.skill-title');
+            if (title && title.hasAttribute('data-toggle')) {
+                // 延迟切换class，等待Bootstrap collapse过渡开始
+                setTimeout(() => {
+                    title.classList.toggle('collapsed');
+                }, 10);
+            }
+        });
+        
+        // 初始化标题状态
+        skillTitles.forEach(title => {
+            const targetId = title.getAttribute('data-target');
+            const targetContent = document.querySelector(targetId);
+            if (targetContent && !targetContent.classList.contains('show')) {
+                title.classList.add('collapsed');
+            }
+        });
+    });
+</script>
+
+<!-- 引入Chart.js库 -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- 蜘蛛图脚本 -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 已有的初始化代码
+        
+        // 初始化蜘蛛图
+        const ctx = document.getElementById('radarChart').getContext('2d');
+        const radarChart = new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: [
+                    '技术能力',
+                    '项目经验', 
+                    '学习能力',
+                    '协作沟通',
+                    '系统思维',
+                    '职业发展'
+                ],
+                datasets: [{
+                    label: '个人水平',
+                    data: [49, 45, 78, 80, 67, 0],
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    borderColor: 'rgba(255, 99, 132, 0.8)',
+                    pointBackgroundColor: 'rgba(255, 99, 132, 1)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgba(255, 99, 132, 1)'
+                },
+                {
+                    label: '平均水平',
+                    data: [58, 50, 70, 65, 38, 42],
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 0.8)',
+                    pointBackgroundColor: 'rgba(54, 162, 235, 1)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgba(54, 162, 235, 1)'
+                }]
+            },
+            options: {
+                elements: {
+                    line: {
+                        borderWidth: 2
+                    }
+                },
+                scales: {
+                    r: {
+                        angleLines: {
+                            display: true,
+                            color: 'rgba(0, 0, 0, 0.1)',
+                        },
+                        suggestedMin: 0,
+                        suggestedMax: 100,
+                        ticks: {
+                            display: false,
+                            stepSize: 20
+                        },
+                        pointLabels: {
+                            font: {
+                                size: 12,
+                                weight: '600'
+                            },
+                            color: '#495057'
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ' + context.raw + '%';
+                            }
+                        }
+                    }
+                },
+                responsive: true,
+                maintainAspectRatio: true
+            }
+        });
+    });
+</script>
+{% endblock content %} 

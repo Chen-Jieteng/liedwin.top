@@ -218,8 +218,27 @@ def user_login(request):
 
 # 用户退出
 def user_logout(request):
+    # 执行Django的logout函数，清除会话
     logout(request)
-    return redirect("article:article_list")
+    
+    # 获取请求的来源，以便判断是否来自CV页面
+    referer = request.META.get('HTTP_REFERER', '')
+    is_from_cv = 'userprofile/cv' in referer
+    
+    # 检查是否是AJAX请求
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+    
+    # 如果是AJAX请求，返回JSON响应
+    if is_ajax:
+        return JsonResponse({'status': 'success', 'message': '已成功退出登录'})
+    
+    # 根据来源页面决定重定向目标
+    if is_from_cv:
+        # 如果来自CV页面，重定向到首页
+        return redirect("article:article_list")
+    else:
+        # 正常重定向到首页
+        return redirect("article:article_list")
 
 
 # 用户注册

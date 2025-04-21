@@ -2313,6 +2313,9 @@
 <script>
     // 刷新会话状态 - 确保CV页面与网站其余部分保持同步
     document.addEventListener('DOMContentLoaded', function() {
+        // 首先在页面加载时清除本地存储中的登出标记
+        localStorage.removeItem('cv_page_logged_out');
+        
         // 检查是否已经处理过登出状态，避免无限刷新
         const loggedOutKey = 'cv_page_logged_out';
         const alreadyLoggedOut = localStorage.getItem(loggedOutKey);
@@ -2320,6 +2323,8 @@
         if (alreadyLoggedOut === 'true') {
             // 已经处理过登出状态，不再检查
             console.log("已处理过登出状态，跳过验证");
+            // 清除标记，以便下次可以正常检查
+            localStorage.removeItem(loggedOutKey);
             return;
         }
         
@@ -2345,6 +2350,40 @@
         .catch(error => {
             console.error('Authentication check failed:', error);
             // 错误情况下不刷新页面
+        });
+        
+        // 拦截退出登录链接点击事件
+        document.addEventListener('click', function(e) {
+            // 查找退出登录链接
+            if (e.target && (
+                e.target.matches('a[href*="userprofile/logout"]') || 
+                e.target.closest('a[href*="userprofile/logout"]')
+            )) {
+                e.preventDefault();
+                console.log('拦截到退出登录点击');
+                
+                // 先发送退出请求
+                fetch('/userprofile/logout/', {
+                    method: 'GET',
+                    credentials: 'same-origin'
+                })
+                .then(response => {
+                    console.log('退出登录请求完成');
+                    // 清除所有会话相关的本地存储
+                    localStorage.removeItem(loggedOutKey);
+                    
+                    // 设置标记表示已退出
+                    localStorage.setItem('force_logged_out', 'true');
+                    
+                    // 跳转到首页
+                    window.location.href = '/';
+                })
+                .catch(error => {
+                    console.error('退出登录请求失败:', error);
+                    // 出错时也跳转到首页
+                    window.location.href = '/';
+                });
+            }
         });
         
         // 显示智能客服组件，仅在CV页面

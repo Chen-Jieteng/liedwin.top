@@ -318,6 +318,24 @@
         
         {% include 'back_to_top_func.html' %}
         
+        <!-- 会话状态检查 -->
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // 检查是否是从CV页面强制退出后跳转来的
+                if (localStorage.getItem('force_logged_out') === 'true') {
+                    console.log('检测到CV页面退出登录状态');
+                    // 清除标记
+                    localStorage.removeItem('force_logged_out');
+                    
+                    // 如果用户仍显示为已登录，强制刷新页面获取最新状态
+                    if (document.querySelector('.navbar-nav .dropdown-toggle[aria-haspopup="true"]')) {
+                        console.log('当前页面显示用户仍登录，强制刷新');
+                        window.location.reload();
+                    }
+                }
+            });
+        </script>
+        
         <!-- 确保所有头像图片都正确填充圆形容器 -->
         <script>
             document.addEventListener('DOMContentLoaded', function() {

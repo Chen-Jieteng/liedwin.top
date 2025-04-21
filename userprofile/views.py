@@ -21,10 +21,18 @@ def check_auth(request):
     如果用户已登录，返回200状态码
     如果用户未登录，返回403状态码
     """
+    # 确保使用最新的请求状态检查认证
+    request.user = request._request.user if hasattr(request, '_request') else request.user
+    
+    # 添加跨域响应头(如果需要)
+    response_headers = {}
+    if 'HTTP_X_REQUESTED_WITH' in request.META:
+        response_headers['Access-Control-Allow-Origin'] = '*'
+    
     if request.user.is_authenticated:
-        return HttpResponse("Authenticated", status=200)
+        return HttpResponse("Authenticated", status=200, headers=response_headers)
     else:
-        return HttpResponse("Not authenticated", status=403)
+        return HttpResponse("Not authenticated", status=403, headers=response_headers)
 
 # 个人CV视图
 def user_cv(request, id=None):

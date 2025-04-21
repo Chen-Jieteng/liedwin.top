@@ -74,7 +74,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'allauth.account.middleware.AccountMiddleware',  # 添加allauth中间件
 ]
 
 ROOT_URLCONF = 'my_blog.urls'
@@ -155,11 +154,10 @@ USE_TZ = True
 
 # 静态文件地址
 STATIC_URL = '/static/'
-STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, "static"),
-)
-# 静态文件收集目录
-STATIC_ROOT = os.path.join(BASE_DIR, 'collected_static')
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # SMTP服务器
 EMAIL_HOST = 'your smtp'
@@ -200,15 +198,17 @@ CKEDITOR_CONFIGS = {
             ['Link', 'Unlink'],
             # 列表
             ['NumberedList', 'BulletedList'],
-            # 图片
-            ['Image', 'Table'],
+            # 图片 - 使用image2替代image
+            ['Image2', 'Table'],
             # 标题
-            ['Format'], 
-            # 最大化
-            ['Maximize']
+            ['Format']
+            # 最大化 - 已移除
+            # ['Maximize']
         ],
-        # 插件
+        # 插件 - 移除普通image插件
         'extraPlugins': ','.join(['codesnippet', 'prism', 'widget', 'lineutils', 'image2', 'uploadimage', 'clipboard', 'dialogadvtab']),
+        # 显式禁用普通image插件和最大化插件
+        'removePlugins': 'image,maximize',
         # 上传图片配置
         'filebrowserUploadUrl': '/ckeditor/upload/',
         'filebrowserBrowseUrl': '/ckeditor/browse/',
@@ -221,6 +221,10 @@ CKEDITOR_CONFIGS = {
         'removeFormatAttributes': '',
         # 设置格式选项
         'format_tags': 'p;h1;h2;h3;h4;h5;h6;pre',
+        # 图片2插件配置
+        'image2_alignClasses': ['image-left', 'image-center', 'image-right'],
+        'image2_disableResizer': False,
+        'image2_prefillDimensions': False,
     }
 }
 

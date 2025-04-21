@@ -146,99 +146,76 @@
         <div class="col-12 col-md-6 col-lg-4 mb-4">
             <div class="card h-100 border-0 shadow-sm hover-shadow">
                 <!-- 文章封面 -->
-            {% if article.avatar %}
-                <div class="card-img-top article-cover">
-                    <img src="{{ article.avatar.url }}" alt="封面" class="img-fluid">
-                </div>
-                {% else %}
-                <div class="card-img-top article-cover-placeholder bg-light d-flex align-items-center justify-content-center p-4">
-                    <i class="fas fa-newspaper text-muted fa-3x"></i>
-                </div>
-            {% endif %}
-
-                <div class="card-body d-flex flex-column">
-                    <!-- 栏目和标签 -->
-                    <div class="d-flex flex-wrap mb-2">
-                {% if article.column %}
-                        <a href="{% url 'article:article_list' %}?column={{ article.column.id }}" 
-                           class="badge badge-pill badge-primary mr-2 mb-1 px-3 py-2">
-                        {{ article.column }}
-                    </a>
-                {% endif %}
-
-                        {% for tag in article.tags.all|slice:":2" %}
-                        <a href="{% url 'article:article_list' %}?tag={{ tag }}"
-                           class="badge badge-pill badge-light text-muted mr-2 mb-1 px-2 py-1">
-                            {{ tag }}
-                        </a>
-                    {% endfor %}
-                        
-                        {% if article.tags.count > 2 %}
-                        <span class="badge badge-pill badge-light text-muted mb-1 px-2 py-1">+{{ article.tags.count|add:"-2" }}</span>
-                        {% endif %}
-                    </div>
-
-                <!-- 标题 -->
-                    <h5 class="card-title mb-2">
-                        <a href="{% url 'article:article_detail' article.id %}" class="text-dark stretched-link">
-                            {% if article.title|length > 40 %}
-                                {{ article.title|slice:":40" }}...
-                            {% else %}
-                            {{ article.title }}
+                <div class="card shadow-sm">
+                    {% if article.avatar %}
+                        <img class="card-img-top rounded-top" src="{{ article.avatar.url }}" alt="{{ article.title }}">
+                    {% endif %}
+                    <div class="card-body">
+                        <!-- 标题 -->
+                        <h5 class="card-title mb-2">
+                            {% if article.is_draft %}
+                            <span class="badge badge-warning mr-2">草稿</span>
                             {% endif %}
-                        </a>
-                    </h5>
-                    
-                <!-- 摘要 -->
-                    <p class="card-text text-muted mb-3 flex-grow-1">
-                        {{ article.body|striptags|slice:"0:80" }}{% if article.body|striptags|length > 80 %}...{% endif %}
-                    </p>
-                    
-                    <!-- 文章元信息 -->
-                    <div class="d-flex align-items-center text-muted">
-                        <!-- 作者头像和名称 -->
-                        <div class="d-flex align-items-center mr-auto">
-                            {% if article.author.profile.avatar %}
-                            <div class="author-avatar author-popover rounded-circle overflow-hidden shadow-sm mr-2" 
-                                 style="width: 24px; height: 24px; cursor: pointer;" 
-                                 data-toggle="popover" 
-                                 data-placement="top" 
-                                 data-trigger="hover"
-                                 data-html="true"
-                                 data-author-id="{{ article.author.id }}"
-                                 data-author-name="{{ article.author.username }}"
-                                 data-author-avatar="{% if article.author.profile.avatar %}{{ article.author.profile.avatar.url }}{% endif %}"
-                                 data-author-bio="{% if article.author.profile.bio %}{{ article.author.profile.bio }}{% else %}这个人很懒，什么都没写...{% endif %}">
-                                <img src="{{ article.author.profile.avatar.url }}" alt="{{ article.author }}" class="w-100 h-100" style="object-fit: cover;">
-                            </div>
-                            {% else %}
-                            <div class="author-avatar author-popover rounded-circle bg-light d-flex align-items-center justify-content-center shadow-sm mr-2" 
-                                 style="width: 24px; height: 24px; cursor: pointer;"
-                                 data-toggle="popover" 
-                                 data-placement="top" 
-                                 data-trigger="hover"
-                                 data-html="true"
-                                 data-author-id="{{ article.author.id }}"
-                                 data-author-name="{{ article.author.username }}"
-                                 data-author-avatar=""
-                                 data-author-bio="{% if article.author.profile.bio %}{{ article.author.profile.bio }}{% else %}这个人很懒，什么都没写...{% endif %}">
-                                <i class="fas fa-user text-secondary" style="font-size: 12px;"></i>
-                            </div>
-                            {% endif %}
-                            <span class="small">{{ article.author.username }}</span>
-                        </div>
+                            <a href="{% url 'article:article_detail' article.id %}" class="text-dark stretched-link">
+                                {% if article.title|length > 40 %}
+                                    {{ article.title|slice:'40' }}...
+                                {% else %}
+                                    {{ article.title }}
+                                {% endif %}
+                            </a>
+                        </h5>
                         
-                        <!-- 阅读量和评论数 -->
-                        <div class="d-flex align-items-center">
-                            <span class="mr-3 small" title="阅读量">
-                                <i class="fas fa-eye mr-1 text-info"></i>{{ article.total_views }}
-                            </span>
-                            <span class="mr-3 small" title="评论数">
-                                <i class="fas fa-comment mr-1 text-success"></i>{{ article.comments.count }}
-                            </span>
-                            <span class="small" title="发布时间">
-                                <i class="fas fa-clock mr-1 text-warning"></i>{{ article.created|timesince_zh }}
-                            </span>
+                        <!-- 摘要 -->
+                        <p class="card-text text-muted mb-3 flex-grow-1">
+                            {{ article.body|striptags|slice:"0:80" }}{% if article.body|striptags|length > 80 %}...{% endif %}
+                        </p>
+                        
+                        <!-- 文章元信息 -->
+                        <div class="d-flex align-items-center text-muted">
+                            <!-- 作者头像和名称 -->
+                            <div class="d-flex align-items-center mr-auto">
+                                {% if article.author.profile.avatar %}
+                                <div class="author-avatar author-popover rounded-circle overflow-hidden shadow-sm mr-2" 
+                                     style="width: 24px; height: 24px; cursor: pointer;" 
+                                     data-toggle="popover" 
+                                     data-placement="top" 
+                                     data-trigger="hover"
+                                     data-html="true"
+                                     data-author-id="{{ article.author.id }}"
+                                     data-author-name="{{ article.author.username }}"
+                                     data-author-avatar="{% if article.author.profile.avatar %}{{ article.author.profile.avatar.url }}{% endif %}"
+                                     data-author-bio="{% if article.author.profile.bio %}{{ article.author.profile.bio }}{% else %}这个人很懒，什么都没写...{% endif %}">
+                                    <img src="{{ article.author.profile.avatar.url }}" alt="{{ article.author }}" class="w-100 h-100" style="object-fit: cover;">
+                                </div>
+                                {% else %}
+                                <div class="author-avatar author-popover rounded-circle bg-light d-flex align-items-center justify-content-center shadow-sm mr-2" 
+                                     style="width: 24px; height: 24px; cursor: pointer;"
+                                     data-toggle="popover" 
+                                     data-placement="top" 
+                                     data-trigger="hover"
+                                     data-html="true"
+                                     data-author-id="{{ article.author.id }}"
+                                     data-author-name="{{ article.author.username }}"
+                                     data-author-avatar=""
+                                     data-author-bio="{% if article.author.profile.bio %}{{ article.author.profile.bio }}{% else %}这个人很懒，什么都没写...{% endif %}">
+                                    <i class="fas fa-user text-secondary" style="font-size: 12px;"></i>
+                                </div>
+                                {% endif %}
+                                <span class="small">{{ article.author.username }}</span>
+                            </div>
+                            
+                            <!-- 阅读量和评论数 -->
+                            <div class="d-flex align-items-center">
+                                <span class="mr-3 small" title="阅读量">
+                                    <i class="fas fa-eye mr-1 text-info"></i>{{ article.total_views }}
+                                </span>
+                                <span class="mr-3 small" title="评论数">
+                                    <i class="fas fa-comment mr-1 text-success"></i>{{ article.comments.count }}
+                                </span>
+                                <span class="small" title="发布时间">
+                                    <i class="fas fa-clock mr-1 text-warning"></i>{{ article.created|timesince_zh }}
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -278,6 +255,9 @@
                     <div class="card-body">
                         <!-- 文章标题 -->
                         <h5 class="card-title">
+                            {% if article.is_draft %}
+                            <span class="badge badge-warning mr-2">草稿</span>
+                            {% endif %}
                             <a href="{% url 'article:article_detail' article.id %}" class="text-dark stretched-link">
                                 {{ article.title }}
                             </a>
@@ -342,13 +322,13 @@
                                 <!-- 统计 -->
                                 <span class="mr-2" title="阅读量">
                                     <i class="fas fa-eye mr-1 text-info"></i>{{ article.total_views }}
-                    </span>
+                                </span>
                                 <span class="mr-2" title="评论数">
                                     <i class="fas fa-comment mr-1 text-success"></i>{{ article.comments.count }}
-                    </span>
+                                </span>
                                 <span title="发布时间">
                                     <i class="fas fa-clock mr-1 text-warning"></i>{{ article.created|timesince_zh }}
-                    </span>
+                                </span>
                             </div>
                         </div>
                     </div>

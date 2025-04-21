@@ -23,7 +23,61 @@
     border-radius: 50%;
 }
 
-/* 确保左侧头像区域没有其他内容重叠 */
+/* 修复头像样式 */
+.avatar-container {
+    position: relative;
+    width: 160px;
+    height: 160px;
+    overflow: hidden;
+    border-radius: 50%;
+    background-color: #f8f9fa;
+    box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,.075);
+}
+
+#current-avatar {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 5;
+}
+
+#avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #e9ecef;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 4;
+}
+
+.avatar-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    opacity: 0;
+    transition: opacity 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    z-index: 10;
+}
+
+.avatar-container:hover .avatar-overlay {
+    opacity: 1;
+    cursor: pointer;
+}
+
 #avatar-preview-img {
     max-width: 100%;
     max-height: 100%;
@@ -31,9 +85,39 @@
     border-radius: 50%;
 }
 
+/* 防止重叠视觉问题 */
+.preview-container {
+    position: relative;
+    z-index: 1;
+}
+
+/* 头像容器悬停效果 */
+.avatar-container:hover .avatar-overlay {
+    opacity: 1;
+    cursor: pointer;
+}
+
+/* 头像上传区域样式 */
+#avatar-upload-area {
+    transition: all 0.3s;
+    border: 2px dashed #dee2e6;
+}
+#avatar-upload-area:hover, #avatar-upload-area.dragover {
+    border-color: #007bff;
+    background-color: rgba(0, 123, 255, 0.05);
+}
+
+/* 确保占位符和头像不同时显示 */
+#current-avatar:not([src=""]) + #avatar-placeholder {
+    display: none !important;
+}
+
+/* 防止头像重叠 */
 .avatar-container {
-    overflow: hidden;
-    background-color: #fff;
+    position: relative;
+    display: block;
+    width: 160px;
+    height: 160px;
 }
 </style>
 {% endblock %}
@@ -51,20 +135,17 @@
                         <!-- 左侧个人信息概述 -->
                         <div class="col-md-4 border-right">
                             <div class="text-center mb-4">
-                                <div class="avatar-container mx-auto" style="width: 160px; height: 160px;">
+                                <div class="avatar-container mx-auto">
                                     {% if profile.avatar %}
-                                        <img src="{{ profile.avatar.url }}" alt="{{ user.username }}" id="current-avatar" class="rounded-circle">
-                                        <div class="avatar-overlay">
-                                            <i class="fas fa-camera text-white fa-2x"></i>
-                                        </div>
+                                        <img src="{{ profile.avatar.url }}" alt="{{ user.username }}" id="current-avatar">
                                     {% else %}
-                                        <div id="avatar-placeholder" class="rounded-circle">
+                                        <div id="avatar-placeholder">
                                             <i class="fas fa-user fa-5x text-secondary"></i>
                                         </div>
-                                        <div class="avatar-overlay">
-                                            <i class="fas fa-camera text-white fa-2x"></i>
-                                        </div>
                                     {% endif %}
+                                    <div class="avatar-overlay">
+                                        <i class="fas fa-camera text-white fa-2x"></i>
+                                    </div>
                                 </div>
                                 <h5 class="mt-3 font-weight-bold">{{ user.username }}</h5>
                                 <p class="text-muted">
@@ -132,26 +213,31 @@
                                 
                                 <!-- 个人简介 -->
                                 <div class="form-group mt-4">
-                                    <label for="bio" class="font-weight-bold"><i class="fas fa-address-card mr-1"></i>个人简介</label>
-                                    <textarea class="form-control shadow-sm" 
-                                              id="bio" 
-                                              name="bio" 
-                                              rows="6" 
-                                              placeholder="介绍一下自己吧..."
-                                    >{{ profile.bio }}</textarea>
-                                    <small class="form-text text-muted">让其他用户了解您的兴趣和专长</small>
+                                    <label for="bio" class="font-weight-bold"><i class="fas fa-feather-alt mr-1"></i>个人简介</label>
+                                    <textarea class="form-control shadow-sm" id="bio" name="bio" rows="5" placeholder="介绍一下自己吧...">{{ profile.bio }}</textarea>
+                                    <small class="form-text text-muted">描述你自己，让大家了解你，不超过200字。</small>
                                 </div>
                                 
                                 <!-- 提交按钮 -->
-                                <div class="mt-4 text-right">
-                                    <a href="{% url 'article:article_list' %}" class="btn btn-light mr-2">
-                                        <i class="fas fa-times mr-1"></i>取消
-                                    </a>
-                                    <button type="submit" class="btn btn-primary shadow-sm">
-                                        <i class="fas fa-save mr-1"></i>保存修改
+                                <div class="text-right mt-4">
+                                    <button type="submit" class="btn btn-primary px-4 shadow-sm">
+                                        <i class="fas fa-save mr-1"></i>保存设置
                                     </button>
                                 </div>
                             </form>
+                            
+                            <!-- 注销账号 -->
+                            <div class="mt-5 pt-4 border-top">
+                                <div class="card bg-light border-danger mt-3">
+                                    <div class="card-body">
+                                        <h6 class="card-title font-weight-bold">注销账号</h6>
+                                        <p class="card-text text-muted small">注销后，您的个人资料和所有相关数据将被永久删除，此操作不可恢复。</p>
+                                        <button class="btn btn-sm btn-outline-danger" onclick="user_delete()">
+                                            <i class="fas fa-user-times mr-1"></i>注销账号
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -218,24 +304,6 @@
         </div>
     </div>
 </div>
-
-<style>
-/* 头像容器悬停效果 */
-.avatar-container:hover .avatar-overlay {
-    opacity: 1;
-    cursor: pointer;
-}
-
-/* 头像上传区域样式 */
-#avatar-upload-area {
-    transition: all 0.3s;
-    border: 2px dashed #dee2e6;
-}
-#avatar-upload-area:hover, #avatar-upload-area.dragover {
-    border-color: #007bff;
-    background-color: rgba(0, 123, 255, 0.05);
-}
-</style>
 
 <!-- 引入自定义脚本以增强交互体验 -->
 <script>
@@ -387,7 +455,7 @@
                 avatarDropzone.style.display = 'none';
                 avatarStatus.style.display = 'block';
                 
-                // 同时更新左侧当前头像预览
+                // 更新左侧当前头像预览
                 if (currentAvatar) {
                     currentAvatar.src = croppedImageDataURL;
                 } else if (avatarPlaceholder) {
@@ -397,6 +465,13 @@
                     newAvatar.id = 'current-avatar';
                     newAvatar.src = croppedImageDataURL;
                     newAvatar.className = 'rounded-circle';
+                    newAvatar.style.position = 'absolute';
+                    newAvatar.style.top = '0';
+                    newAvatar.style.left = '0';
+                    newAvatar.style.width = '100%';
+                    newAvatar.style.height = '100%';
+                    newAvatar.style.objectFit = 'cover';
+                    newAvatar.style.zIndex = '5';
                     avatarContainer.insertBefore(newAvatar, avatarContainer.firstChild);
                 }
                 
@@ -468,7 +543,7 @@
                     let placeholder = document.createElement('div');
                     placeholder.id = 'avatar-placeholder';
                     placeholder.className = 'bg-light rounded-circle mx-auto d-flex align-items-center justify-content-center';
-                    placeholder.style = 'width: 160px; height: 160px;';
+                    placeholder.style = 'width: 160px; height: 160px; position: absolute; top: 0; left: 0; z-index: 4;';
                     placeholder.innerHTML = '<i class="fas fa-user fa-5x text-secondary"></i>';
                     avatarContainer.insertBefore(placeholder, avatarContainer.firstChild);
                 } else {

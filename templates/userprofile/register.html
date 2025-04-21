@@ -11,15 +11,15 @@
                     <h4 class="mb-0 py-2"><i class="fas fa-user-plus mr-2"></i>注册新账号</h4>
                 </div>
                 <div class="card-body p-4">
-                    <form method="post" action="." class="form">
-                        {% csrf_token %}
-                        {% bootstrap_form form %}
+            <form method="post" action="." class="form">
+                {% csrf_token %}
+                {% bootstrap_form form %}
                         <div class="mt-4">
                             <button type="submit" class="btn btn-primary btn-block shadow-sm">
                                 <i class="fas fa-user-check mr-2"></i>创建账号
                             </button>
                         </div>
-                    </form>
+            </form>
                     
                     <!-- 登录选项 -->
                     <div class="mt-4 text-center">

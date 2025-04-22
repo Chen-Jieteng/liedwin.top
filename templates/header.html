@@ -156,7 +156,7 @@
                                 <i class="fas fa-file-alt mr-2"></i>我的草稿
                             </a>
                             <div class="dropdown-divider"></div>
-                            <a class="dropdown-item" href='{% url "userprofile:logout_with_timestamp" timestamp %}'>
+                            <a class="dropdown-item" href="{% url 'userprofile:logout' %}">
                                 <i class="fas fa-sign-out-alt mr-2"></i>退出登录
                             </a>
                         </div>
@@ -174,7 +174,6 @@
                             登录
                         </a>
                     </li>
-                <!-- if 语句在这里结束 -->
                 {% endif %}
             </ul>
         </div>
@@ -193,9 +192,6 @@
 </form>
     <script>
         function user_delete() {
-            // 保存当前URL，以便取消时可以返回
-            const currentUrl = window.location.href;
-            
             // 调用layer弹窗组件
             layer.open({
                 title: "确认注销",
@@ -204,10 +200,6 @@
                     $('form#user_delete button').click();
                     layer.close(index);
                 },
-                btn2: function(index, layero) {
-                    // 取消时不执行任何操作，保持在当前页面
-                    return true;
-                }
             })
         }
     </script>

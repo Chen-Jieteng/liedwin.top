@@ -12,11 +12,6 @@
                     <form method="post" action=".">
                         {% csrf_token %}
                         
-                        <!-- 隐藏的next字段 -->
-                        {% if next %}
-                        <input type="hidden" name="next" value="{{ next }}">
-                        {% endif %}
-                        
                         <!-- 账号输入 -->
                         <div class="form-group">
                             <label for="username"><i class="fas fa-user text-primary mr-2"></i>用户名</label>

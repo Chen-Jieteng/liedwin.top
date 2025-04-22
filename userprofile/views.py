@@ -17,110 +17,11 @@ from article.models import ArticlePost
 # 个人CV视图
 def user_cv(request, id=None):
     """
-    显示用户的简历CV页面，带有树形结构展示
-    如果id为None，则显示当前登录用户的CV
-    如果未登录且id为None，则显示默认CV（站长的CV）
+    显示个人简历CV页面
     """
-    # 确定要显示的用户
-    if id is not None:
-        try:
-            user = User.objects.get(id=id)
-        except User.DoesNotExist:
-            return HttpResponse("该用户不存在")
-    elif request.user.is_authenticated:
-        user = request.user
-    else:
-        # 未登录用户默认显示ID为1的用户CV（通常是站长）
-        # 如果站长ID不是1，请替换为正确的ID
-        try:
-            user = User.objects.get(id=1)
-        except User.DoesNotExist:
-            # 如果ID为1的用户不存在，则尝试获取第一个用户
-            try:
-                user = User.objects.first()
-                if not user:
-                    return HttpResponse("系统中没有用户，无法显示CV")
-            except:
-                return HttpResponse("无法获取默认用户CV")
-    
-    # 获取用户资料
-    if Profile.objects.filter(user=user).exists():
-        profile = Profile.objects.get(user=user)
-    else:
-        profile = Profile.objects.create(user=user)
-    
-    # 准备简历数据（树结构）
-    cv_data = {
-        # 示例数据结构，实际应该从数据库或配置中获取
-        'education': [
-            {
-                'degree': '硕士学位',
-                'school': 'XX大学',
-                'major': '计算机科学',
-                'time': '2018-2021',
-                'children': []
-            },
-            {
-                'degree': '学士学位',
-                'school': 'YY大学',
-                'major': '软件工程',
-                'time': '2014-2018',
-                'children': []
-            }
-        ],
-        'experience': [
-            {
-                'position': '高级开发工程师',
-                'company': 'ABC科技有限公司',
-                'time': '2021-至今',
-                'description': '负责后端系统架构设计和开发',
-                'children': [
-                    {
-                        'project': '企业管理系统',
-                        'role': '技术负责人',
-                        'time': '2022-2023',
-                        'description': '设计并实现了基于Django的企业管理平台'
-                    },
-                    {
-                        'project': '数据分析平台',
-                        'role': '后端开发',
-                        'time': '2021-2022',
-                        'description': '负责数据处理管道和API设计'
-                    }
-                ]
-            },
-            {
-                'position': '开发工程师',
-                'company': 'XYZ公司',
-                'time': '2018-2021',
-                'description': '前端和后端开发',
-                'children': []
-            }
-        ],
-        'skills': [
-            {
-                'category': '编程语言',
-                'items': ['Python', 'JavaScript', 'Java', 'C++'],
-                'children': []
-            },
-            {
-                'category': '框架',
-                'items': ['Django', 'Flask', 'React', 'Vue.js'],
-                'children': []
-            },
-            {
-                'category': '其他',
-                'items': ['数据库设计', 'RESTful API', '系统架构', 'DevOps'],
-                'children': []
-            }
-        ]
-    }
-    
+    # 简化为直接渲染CV模板，不再进行用户判断和动态生成数据
     context = {
-        'user': user,
-        'profile': profile,
-        'cv_data': cv_data,
-        'page_title': f"{user.username}的个人简历"
+        'page_title': "陈杰腾的个人简历"
     }
     
     return render(request, 'userprofile/cv.html', context)
@@ -179,63 +80,23 @@ def user_login(request):
             if user:
                 # 将用户数据保存在 session 中，即实现了登录动作
                 login(request, user)
-                
-                # 获取来源页面URL或next参数
-                next_url = request.POST.get('next') or request.GET.get('next')
-                referer_url = request.META.get('HTTP_REFERER')
-                
-                # 优先使用next参数，其次使用来源页面，最后默认到文章列表
-                if next_url:
-                    return redirect(next_url)
-                elif referer_url:
-                    return redirect(referer_url)
-                else:
-                    return redirect("article:article_list")
+                return redirect("article:article_list")
             else:
                 return HttpResponse("账号或密码输入有误。请重新输入~")
         else:
             return HttpResponse("账号或密码输入不合法")
     elif request.method == 'GET':
         user_login_form = UserLoginForm()
-        context = { 
-            'form': user_login_form,
-            'next': request.GET.get('next', '')
-        }
+        context = { 'form': user_login_form }
         return render(request, 'userprofile/login.html', context)
     else:
         return HttpResponse("请使用GET或POST请求数据")
 
 
 # 用户退出
-def user_logout(request, timestamp=None):
-    # 获取来源页面URL
-    referer_url = request.META.get('HTTP_REFERER')
-    
-    # 确保请求中有session
-    if hasattr(request, 'session'):
-        # 清除所有session数据
-        request.session.flush()
-    
-    # 执行Django的退出登录操作
+def user_logout(request):
     logout(request)
-    
-    # 创建一个新的响应对象以便能够删除所有auth相关cookies
-    if referer_url:
-        response = redirect(referer_url)
-    else:
-        response = redirect("article:article_list")
-    
-    # 删除认证相关的cookies
-    response.delete_cookie('sessionid')
-    response.delete_cookie('sessionid_new')  # 使用settings中定义的名称
-    response.delete_cookie('csrftoken')  # 可选，通常不需要删除
-    
-    # 在响应中添加缓存控制头，防止浏览器缓存
-    response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
-    response['Pragma'] = 'no-cache'
-    response['Expires'] = '0'
-    
-    return response
+    return redirect("article:article_list")
 
 
 # 用户注册

@@ -1,0 +1,23 @@
+{
+  "name": "liedwin.top",
+  "version": "1.0.0",
+  "description": "自用网站，commit中的老陈是我自己，供自学者学习用\r # 中文\r # English\r # 日本語\r # Arabic عربية‎",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Chen-Jieteng/liedwin.top.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Chen-Jieteng/liedwin.top/issues"
+  },
+  "homepage": "https://github.com/Chen-Jieteng/liedwin.top#readme",
+  "dependencies": {
+    "ckeditor4": "^4.25.1"
+  }
+}

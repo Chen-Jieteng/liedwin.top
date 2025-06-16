@@ -1,0 +1,363 @@
+/* 自定义样式 - 确保表单元素和编辑器宽度一致 */
+
+/* CKEditor相关样式 */
+.django-ckeditor-widget {
+    width: 100% !important;
+    display: block !important;
+}
+
+.cke_chrome {
+    border-color: #ced4da !important;
+    border-radius: 0.25rem !important;
+    box-shadow: 0 .125rem .25rem rgba(0,0,0,.075) !important;
+    width: 100% !important;
+}
+
+.cke_top, .cke_bottom {
+    background: #f8f9fa !important;
+}
+
+.cke_contents {
+    height: 400px !important;
+}
+
+.cke_wysiwyg_frame, .cke_wysiwyg_div {
+    width: 100% !important;
+}
+
+.editor-container {
+    width: 100% !important;
+}
+
+/* 表单元素样式统一 */
+.form-control, .custom-select, .custom-file {
+    max-width: 100%;
+    width: 100%;
+}
+
+/* 表单分组样式 */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+/* 用户头像样式 */
+.avatar-container {
+    position: relative;
+    z-index: 10;
+    background-color: #ffffff;
+    border-radius: 50%;
+    overflow: hidden;
+    box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
+}
+
+#current-avatar {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    background-color: #ffffff;
+}
+
+#avatar-placeholder {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f8f9fa;
+}
+
+.avatar-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0,0,0,0.5);
+    opacity: 0;
+    transition: opacity 0.3s;
+    z-index: 20;
+    border-radius: 50%;
+}
+
+.avatar-container:hover .avatar-overlay {
+    opacity: 1;
+    cursor: pointer;
+}
+
+/* 全局用户头像样式 - 确保所有页面上的头像都填充圆形容器 */
+.author-avatar img,
+.rounded-circle img,
+img.avatar-img,
+[class*="avatar"] img,
+.user-avatar img,
+.media .rounded-circle img,
+div[style*="height"] img[alt*="avatar"],
+div[style*="width"] img[alt*="avatar"],
+.article-list .author-avatar img,
+.article-detail .author-avatar img,
+.author-popover img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: block !important;
+}
+
+/* 控制CKEditor编辑器中图片的尺寸 */
+.cke_editable img {
+    max-width: 98% !important; /* 确保不超出编辑器 */
+    width: auto !important; /* 自适应宽度 */
+    height: auto !important;
+    display: block !important;
+    margin: 10px auto !important; /* 图片居中显示并添加上下边距 */
+}
+
+/* 确保文章内容页面也应用相同的图片样式 */
+.article-body img {
+    max-width: 98% !important; /* 确保不超出容器 */
+    width: auto !important; /* 自适应宽度 */
+    height: auto !important;
+    display: block !important;
+    margin: 10px auto !important;
+}
+
+/* 响应式调整图片大小 */
+@media (max-width: 768px) {
+    .cke_editable img,
+    .article-body img {
+        max-width: 100% !important;
+    }
+}
+
+.author-avatar,
+.comment-avatar,
+.user-avatar,
+.rounded-circle,
+div[class*="avatar"] {
+    overflow: hidden !important;
+    background-color: #ffffff !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+/* 确保文章页面的评论头像也填充整个圆形 */
+.media .rounded-circle {
+    overflow: hidden !important;
+    display: block !important;
+}
+
+/* 确保首页文章列表中的头像正确 */
+.row > div > span > .author-avatar {
+    display: inline-block !important;
+    vertical-align: middle !important;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .cke_toolbar {
+        display: inline-block !important;
+        float: none !important;
+    }
+    
+    .cke_toolbar_break {
+        display: block !important;
+        clear: both !important;
+    }
+}
+
+/* 作者名片样式 */
+.author-card-popover {
+    max-width: 300px;
+    box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15);
+    border: none;
+}
+
+.author-card-popover .popover-body {
+    padding: 0;
+}
+
+.author-card {
+    width: 100%;
+}
+
+.author-card .card-header {
+    background-color: #f8f9fa;
+    padding: 0.75rem;
+    border-bottom: 1px solid rgba(0,0,0,0.125);
+}
+
+.author-card .author-info {
+    display: flex;
+    align-items: center;
+}
+
+.author-card .author-avatar-lg {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-right: 0.75rem;
+}
+
+.author-card .author-avatar-lg img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.author-card .author-name {
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 0.25rem;
+}
+
+.author-card .author-stats {
+    display: flex;
+    justify-content: space-around;
+    padding: 0.75rem;
+    border-bottom: 1px solid rgba(0,0,0,0.125);
+}
+
+.author-card .stat-item {
+    text-align: center;
+}
+
+.author-card .stat-value {
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.author-card .stat-label {
+    font-size: 0.75rem;
+    color: #6c757d;
+}
+
+.author-card .card-footer {
+    padding: 0.75rem;
+    background-color: #fff;
+}
+
+.author-card .btn-follow {
+    width: 100%;
+}
+
+/* 确保鼠标悬浮在头像上时显示手型指针 */
+.author-avatar {
+    cursor: pointer;
+}
+
+/* 智能客服组件样式 */
+.ai-chat-widget {
+    position: fixed;
+    bottom: 6.5rem; /* 调整位置，与回到顶部按钮保持距离 */
+    right: 1.5rem; /* 与回到顶部按钮水平对齐 */
+    z-index: 1000;
+}
+
+.chat-toggle-btn {
+    width: 3.5rem; /* 与回到顶部按钮大小一致 */
+    height: 3.5rem; /* 与回到顶部按钮大小一致 */
+    border-radius: 33%; /* 匹配回到顶部按钮的样式 */
+    background-color: #007bff;
+    color: white;
+    border: none;
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    transition: all 0.3s ease;
+    opacity: 0.7; /* 与回到顶部按钮透明度一致 */
+}
+
+.chat-toggle-btn:hover {
+    transform: scale(1.1);
+    opacity: 1;
+    box-shadow: 0 6px 16px rgba(0, 123, 255, 0.5);
+}
+
+.pulse-animation {
+    animation: pulse-attention 1.5s ease-in-out 3;
+}
+
+@keyframes pulse-attention {
+    0% { transform: scale(1); box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4); }
+    50% { transform: scale(1.1); box-shadow: 0 4px 18px rgba(0, 123, 255, 0.6); }
+    100% { transform: scale(1); box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4); }
+}
+
+.ai-guide-tooltip {
+    position: fixed;
+    bottom: 110px;
+    right: 80px;
+    background-color: white;
+    padding: 12px 18px;
+    border-radius: 8px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+    font-size: 0.9rem;
+    color: #495057;
+    z-index: 999;
+    max-width: 220px;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    pointer-events: auto; /* 确保可以点击关闭按钮 */
+}
+
+.ai-guide-tooltip.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.ai-guide-tooltip:after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    right: 12px;
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-top: 10px solid white;
+}
+
+.ai-guide-tooltip .close-tooltip {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: none;
+    border: none;
+    color: #adb5bd;
+    cursor: pointer;
+    padding: 0;
+    font-size: 0.9rem;
+}
+
+.ai-guide-tooltip .close-tooltip:hover {
+    color: #495057;
+}
+
+/* 响应式调整 */
+@media (max-width: 576px) {
+    .chat-container {
+        width: calc(100% - 40px);
+        right: 20px;
+        bottom: 80px;
+    }
+    
+    .ai-chat-widget {
+        bottom: 6.5rem; /* 保持与回到顶部按钮的相对位置 */
+        right: 1.5rem; /* 与回到顶部按钮对齐 */
+    }
+} 

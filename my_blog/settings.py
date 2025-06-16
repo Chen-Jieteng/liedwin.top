@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     'userprofile',
     'comment',
     'notice',  # 重新启用notice应用
+    'landing',  # 产品落地页面应用
 ]
 
 MIDDLEWARE = [

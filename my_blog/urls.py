@@ -40,6 +40,9 @@ urlpatterns = [
     # django-allauth
     path('accounts/', include('allauth.urls')),
     
+    # 产品下载页面
+    path('download-app/', include('landing.urls', namespace='landing')),
+    
     # CKEditor自定义上传URL (带CSRF豁免)
     path('ckeditor/upload/', csrf_exempt(upload), name='ckeditor_upload'),
     path('ckeditor/browse/', csrf_exempt(browse), name='ckeditor_browse'),

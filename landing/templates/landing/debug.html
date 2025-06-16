@@ -1,0 +1,27 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Landing Debug</title>
+</head>
+<body>
+    <h1>静态文件测试</h1>
+    
+    <h2>CSS文件测试:</h2>
+    <p>CSS URL: {% static 'landing/css/main.c2c6db73.css' %}</p>
+    <link href="{% static 'landing/css/main.c2c6db73.css' %}" rel="stylesheet">
+    
+    <h2>JS文件测试:</h2>
+    <p>JS URL: {% static 'landing/js/main.fdc8e9c5.js' %}</p>
+    
+    <h2>图片文件测试:</h2>
+    <p>Logo URL: {% static 'landing/logo192.png' %}</p>
+    <img src="{% static 'landing/logo192.png' %}" alt="Logo" style="width:50px;">
+    
+    <h2>Manifest文件测试:</h2>
+    <p>Manifest URL: {% static 'landing/manifest.json' %}</p>
+    
+    <div id="root">React应用应该在这里加载</div>
+    <script defer="defer" src="{% static 'landing/js/main.fdc8e9c5.js' %}"></script>
+</body>
+</html> 

@@ -5,4 +5,5 @@ app_name = 'landing'
 
 urlpatterns = [
     path('', views.download_app, name='download_app'),
+    path('debug/', views.debug_static, name='debug_static'),
 ] 

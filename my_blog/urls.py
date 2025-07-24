@@ -8,7 +8,7 @@ from django.views.decorators.csrf import csrf_exempt
 from ckeditor_uploader.views import upload, browse
 
 # 重新启用notifications
-import notifications.urls
+# import notifications.urls  # 临时注释掉以解决Django版本兼容性问题
 
 from article.views import article_list
 from userprofile.views import user_stats_api
@@ -34,7 +34,7 @@ urlpatterns = [
     # 评论
     path('comment/', include('comment.urls', namespace='comment')),
     # 重新启用notifications
-    path('inbox/notifications/', include(notifications.urls, namespace='notifications')),
+    # path('inbox/notifications/', include(notifications.urls, namespace='notifications')),  # 临时注释掉
     # notice
     path('notice/', include('notice.urls', namespace='notice')),
     # django-allauth
@@ -51,3 +51,7 @@ urlpatterns = [
     path('api/user/<int:id>/stats/', user_stats_api, name='user_stats_api'),
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+# 添加静态文件服务（开发环境）
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0])
